@@ -41,6 +41,11 @@ plasma()
   echo 'plasma-wayland-session' >> ${RELENG}/packages.x86_64
   echo 'sddm' >> ${RELENG}/packages.x86_64
   echo 'konsole' >> ${RELENG}/packages.x86_64
+  ln -s /usr/lib/systemd/system/sddm.service ${RELENG}/airootfs/etc/systemd/system/display-manager.service
+  mkdir ${RELENG}/airootfs/etc/sddm.conf.d
+  echo '[Autologin]' >> ${RELENG}/airootfs/etc/sddm.conf.d/autologin.conf
+  echo 'User=archie' >> ${RELENG}/airootfs/etc/sddm.conf.d/autologin.conf
+  echo 'Session=plasma' >> ${RELENG}/airootfs/etc/sddm.conf.d/autologin.conf
 }
 
 user()
