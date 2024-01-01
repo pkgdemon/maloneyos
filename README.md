@@ -21,3 +21,5 @@ Cleanup after build:
 ```
 make clean
 ```
+
+The password for archie user is livecd.

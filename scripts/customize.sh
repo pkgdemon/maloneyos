@@ -40,8 +40,24 @@ plasma()
   echo 'plasma-desktop' >> ${RELENG}/packages.x86_64
   echo 'plasma-wayland-session' >> ${RELENG}/packages.x86_64
   echo 'sddm' >> ${RELENG}/packages.x86_64
+  echo 'konsole' >> ${RELENG}/packages.x86_64
+}
+
+user()
+{
+  echo 'archie:x:1000:1000::/home/archie:/usr/bin/zsh' >> ${RELENG}/airootfs/etc/passwd
+  echo 'archie:$6$veQypn8kEQiN8Qjm$SrUpS4dGB7LUmSImYV8y1jJPRug2mJ8TghJCoHGgfXTrMBViRmEV0yaCFcgruX9.CI9gMNRK99SqrtNlmyU3G.:14871::::::' >> ${RELENG}/airootfs/etc/shadow
+  echo 'root:x:0:root' >> ${RELENG}/airootfs/etc/group
+  echo 'adm:x:4:archie' >> ${RELENG}/airootfs/etc/group
+  echo 'wheel:x:10:archie' >> ${RELENG}/airootfs/etc/group
+  echo 'uucp:x:14:archie' >> ${RELENG}/airootfs/etc/group
+  echo 'archie:x:1000:' >> ${RELENG}/airootfs/etc/group
+  echo 'root:!*::root' >> ${RELENG}/airootfs/etc/gshadow
+  echo 'archie:!*::' >> ${RELENG}/airootfs/etc/gshadow
+  sed -i '/shadow.*=.*0:0:400/a \ \ ["/etc/gshadow"]="0:0:0400"' ${RELENG}/profiledef.sh
 }
 
 lts
 zfs
 plasma
+user
