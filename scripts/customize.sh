@@ -35,5 +35,13 @@ zfs()
   echo "SigLevel = Never" >> ${RELENG}/pacman.conf
 }
 
+plasma()
+{
+  echo 'plasma-desktop' >> ${RELENG}/packages.x86_64
+  echo 'plasma-wayland-session' >> ${RELENG}/packages.x86_64
+  echo 'sddm' >> ${RELENG}/packages.x86_64
+}
+
 lts
 zfs
+plasma
