@@ -25,4 +25,13 @@ lts()
   sed -i "s/initramfs-linux.img/initramfs-${KERNEL}.img/" ${RELENG}//airootfs/etc/mkinitcpio.d/${KERNEL}.preset
 }
 
+zfs()
+{
+  echo "zfs-dkms" >> ${RELENG}/packages.x86_64
+  echo "${KERNEL}-headers" >> ${RELENG}/packages.x86_64
+  echo -e "\n[archzfs]\nServer = https://zxcvfdsa.com/archzfs/\$repo/x86_64" >> ${RELENG}/pacman.conf
+  echo "SigLevel = Never" >> ${RELENG}/pacman.conf
+}
+
 lts
+zfs
