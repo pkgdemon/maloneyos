@@ -23,6 +23,8 @@ lts()
   mv ${RELENG}/airootfs/etc/mkinitcpio.d/linux.preset ${RELENG}//airootfs/etc/mkinitcpio.d/${KERNEL}.preset
   sed -i "s/vmlinuz-linux/vmlinuz-${KERNEL}/" ${RELENG}/airootfs/etc/mkinitcpio.d/${KERNEL}.preset
   sed -i "s/initramfs-linux.img/initramfs-${KERNEL}.img/" ${RELENG}//airootfs/etc/mkinitcpio.d/${KERNEL}.preset
+  sed -i 's/,noswap//' ${RELENG}/airootfs/etc/systemd/system/etc-pacman.d-gnupg.mount
+
 }
 
 zfs()
