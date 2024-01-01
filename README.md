@@ -7,7 +7,6 @@ This project will generate Arch Linux media with my customizations.
 The following packages are required to generate media for Arch Linux
 
 * archiso
-* wget
 
 #### Usage
 
