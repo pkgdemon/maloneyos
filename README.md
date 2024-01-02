@@ -1,19 +1,18 @@
-# maloneyos
+maloneyos
+=========
 
-This project will generate Arch Linux media with my customizations.
+## Features
 
 * LTS Kernel
 * OpenZFS
 * KDE Plasma 5
 
-#### Requirements
-
-The following packages are required to generate media for Arch Linux
+## Requirements
 
 * archiso
 * sddm
 
-#### Usage
+## Usage
 
 Generating the ISO:
 
