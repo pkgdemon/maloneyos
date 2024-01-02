@@ -1,5 +1,6 @@
 maloneyos
 =========
+Live media creator for Arch Linux
 
 ## Features
 
