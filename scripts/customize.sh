@@ -6,6 +6,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Source the build configuration file
 source ../config/build.conf
 
 KERNEL=linux-lts
@@ -50,6 +51,10 @@ plasma()
   echo 'kate' >> ${RELENG}/packages.x86_64
   echo 'konsole' >> ${RELENG}/packages.x86_64
   echo 'spectacle' >> ${RELENG}/packages.x86_64
+}
+
+sddm()
+{
   echo 'sddm' >> ${RELENG}/packages.x86_64
   ln -s /usr/lib/systemd/system/sddm.service ${RELENG}/airootfs/etc/systemd/system/display-manager.service
   mkdir ${RELENG}/airootfs/etc/sddm.conf.d
@@ -78,4 +83,5 @@ user()
 lts
 zfs
 plasma
+sddm
 user
