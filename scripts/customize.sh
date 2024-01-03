@@ -73,7 +73,6 @@ user()
   mkdir ${RELENG}/airootfs/etc/sudoers.d
   echo 'archie ALL=(ALL) ALL' >> ${RELENG}/airootfs/etc/sudoers.d/00_archie
   echo 'arhcie ALL=(ALL) ALL' >> ${RELENG}/airootfs/etc/sudoers.d/00_archie
-
 }
 
 lts
