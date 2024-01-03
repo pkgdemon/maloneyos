@@ -114,6 +114,8 @@ user()
   echo 'root:!*::root' >> "$gshadow_file"
   echo 'archie:!*::' >> "$gshadow_file"
   sed -i '/shadow.*=.*0:0:400/a \ \ ["/etc/gshadow"]="0:0:0400"' "${RELENG}/profiledef.sh"
+
+  # Add archie to sudoers
   mkdir -p "$sudoers_dir"
   echo 'archie ALL=(ALL) ALL' >> "$sudoers_dir/00_archie"
   echo 'archie ALL=(ALL) ALL' >> "$sudoers_dir/00_archie"
