@@ -6,6 +6,10 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Source the build configuration file
 source ../config/build.conf
 
-if [ -d "${WORKDIR}" ] ; then rm -rf ${WORKDIR} ; fi
+# Remove the working directory if it exists
+if [ -d "${WORKDIR}" ]; then
+    rm -rf "${WORKDIR}"
+fi

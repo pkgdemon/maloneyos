@@ -6,6 +6,11 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Load configuration
 source ../config/build.conf
 
-mkarchiso -v -w ${ISO} -o ${WORKDIR} ${RELENG}
+# Build the image
+mkarchiso -v \
+          -w "${ISO}" \
+          -o "${WORKDIR}" \
+          "${RELENG}"
