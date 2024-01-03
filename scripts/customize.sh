@@ -89,9 +89,9 @@ sddm()
   
   # Add autologin to sddm.conf
   mkdir -p "${RELENG}/airootfs/etc/sddm.conf.d"
-  echo '[Autologin]' >> sddm.conf
-  echo 'User=archie' >> sddm.conf
-  echo 'Session=plasma' >> sddm.conf
+  echo '[Autologin]' >> $sddm_conf
+  echo 'User=archie' >> $sddm_conf
+  echo 'Session=plasma' >> $sddm_conf
 }
 
 user()
