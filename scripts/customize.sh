@@ -30,7 +30,6 @@ lts()
   sed -i "s/vmlinuz-linux/vmlinuz-${KERNEL}/" ${RELENG}/airootfs/etc/mkinitcpio.d/${KERNEL}.preset
   sed -i "s/initramfs-linux.img/initramfs-${KERNEL}.img/" ${RELENG}//airootfs/etc/mkinitcpio.d/${KERNEL}.preset
   sed -i 's/,noswap//' ${RELENG}/airootfs/etc/systemd/system/etc-pacman.d-gnupg.mount
-
 }
 
 zfs()
@@ -45,8 +44,13 @@ plasma()
 {
   echo 'plasma-desktop' >> ${RELENG}/packages.x86_64
   echo 'plasma-wayland-session' >> ${RELENG}/packages.x86_64
-  echo 'sddm' >> ${RELENG}/packages.x86_64
+  echo 'ark' >> ${RELENG}/packages.x86_64
+  echo 'dolphin' >> ${RELENG}/packages.x86_64
+  echo 'falkon' >> ${RELENG}/packages.x86_64
+  echo 'kate' >> ${RELENG}/packages.x86_64
   echo 'konsole' >> ${RELENG}/packages.x86_64
+  echo 'spectacle' >> ${RELENG}/packages.x86_64
+  echo 'sddm' >> ${RELENG}/packages.x86_64
   ln -s /usr/lib/systemd/system/sddm.service ${RELENG}/airootfs/etc/systemd/system/display-manager.service
   mkdir ${RELENG}/airootfs/etc/sddm.conf.d
   echo '[Autologin]' >> ${RELENG}/airootfs/etc/sddm.conf.d/autologin.conf
@@ -66,6 +70,10 @@ user()
   echo 'root:!*::root' >> ${RELENG}/airootfs/etc/gshadow
   echo 'archie:!*::' >> ${RELENG}/airootfs/etc/gshadow
   sed -i '/shadow.*=.*0:0:400/a \ \ ["/etc/gshadow"]="0:0:0400"' ${RELENG}/profiledef.sh
+  mkdir ${RELENG}/airootfs/etc/sudoers.d
+  echo 'archie ALL=(ALL) ALL' >> ${RELENG}/airootfs/etc/sudoers.d/00_archie
+  echo 'arhcie ALL=(ALL) ALL' >> ${RELENG}/airootfs/etc/sudoers.d/00_archie
+
 }
 
 lts
