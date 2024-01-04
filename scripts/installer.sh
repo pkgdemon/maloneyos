@@ -50,14 +50,14 @@ DISK="$selected_disk"
 # Display the selected disk
 kdialog --msgbox "You selected: $DISK" 2>/dev/null
 
-# Unmount FAT32 filesystems
+# Unmount filesystems
 umount ${MNT}/boot/efis/${DISK##*/}1 >/dev/null 2>&1
 umount ${MNT}/boot/efi >/dev/null 2>&1
 
 # Export active zpools
 zpool export -a
-zpool labelclear bpool -f
-zpool labelclear rpool -f
+zpool labelclear bpool -f 2>/dev/null
+zpool labelclear rpool -f 2>/dev/null
 
 # Remove MNT directory and recreate it
 rm -rf "${MNT}" >/dev/null 2>&1
@@ -158,29 +158,5 @@ done
 mkdir -p "${MNT}"/boot/efi
 mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f1 -d' '|| true)"1 "${MNT}"/boot/efi
 
-# Download and extract minimal Arch Linux root filesystem
-curl --fail-early --fail -L \
-https://america.archive.pkgbuild.com/iso/2023.09.01/archlinux-bootstrap-x86_64.tar.gz \
--o /tmp/rootfs.tar.gz
-curl --fail-early --fail -L \
-https://america.archive.pkgbuild.com/iso/2023.09.01/archlinux-bootstrap-x86_64.tar.gz.sig \
--o /tmp/rootfs.tar.gz.sig
-
-gpg --auto-key-retrieve --keyserver hkps://keyserver.ubuntu.com --verify /tmp/rootfs.tar.gz.sig
-
-exit 0
-
-ln -s "${MNT}" "${MNT}"/root.x86_64
-tar x  -C "${MNT}" -af /tmp/rootfs.tar.gz root.x86_64
-
-# Generate fstab
-genfstab -t PARTUUID "${MNT}" \
-| grep -v swap \
-| sed "s|vfat.*rw|vfat rw,x-systemd.idle-timeout=1min,x-systemd.automount,noauto,nofail|" \
-> "${MNT}"/etc/fstab
-
-# Chroot and run 2nd install script
-cp /etc/resolv.conf "${MNT}"/etc/resolv.conf
-for i in /dev /proc /sys; do mkdir -p "${MNT}"/"${i}"; mount --rbind "${i}" "${MNT}"/"${i}"; done
-cp chroot-install.sh '${MNT}'
-chroot "${MNT}" /usr/bin/env DISK="${DISK}" bash -c chroot-install.sh
+# Use unsquashfs to extract the squashfs image to the ZFS root
+unsquashfs -f -d "${MNT}" /dev/loop0
