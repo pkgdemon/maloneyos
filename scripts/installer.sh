@@ -110,3 +110,37 @@ zpool create \
    $(for i in ${DISK}; do
       printf '%s ' "${i}3";
      done)
+
+# Create root system container
+zfs create \
+ -o canmount=off \
+ -o mountpoint=none \
+rpool/archlinux
+
+# Create and mount datasets
+zfs create -o canmount=noauto -o mountpoint=/  rpool/archlinux/root
+zfs mount rpool/archlinux/root
+zfs create -o mountpoint=legacy rpool/archlinux/home
+mkdir "${MNT}"/home
+mount -t zfs rpool/archlinux/home "${MNT}"/home
+zfs create -o mountpoint=legacy  rpool/archlinux/var
+zfs create -o mountpoint=legacy rpool/archlinux/var/lib
+zfs create -o mountpoint=legacy rpool/archlinux/var/log
+zfs create -o mountpoint=none bpool/archlinux
+zfs create -o mountpoint=legacy bpool/archlinux/root
+mkdir "${MNT}"/boot
+mount -t zfs bpool/archlinux/root "${MNT}"/boot
+mkdir -p "${MNT}"/var/log
+mkdir -p "${MNT}"/var/lib
+mount -t zfs rpool/archlinux/var/lib "${MNT}"/var/lib
+mount -t zfs rpool/archlinux/var/log "${MNT}"/var/log
+
+# Format and mount the ESP
+for i in ${DISK}; do
+ mkfs.vfat -n EFI "${i}"-part1
+ mkdir -p "${MNT}"/boot/efis/"${i##*/}"-part1
+ mount -t vfat -o iocharset=iso8859-1 "${i}"-part1 "${MNT}"/boot/efis/"${i##*/}"-part1
+done
+
+mkdir -p "${MNT}"/boot/efi
+mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f1 -d' '|| true)"-part1 "${MNT}"/boot/efised -i '/edge/d' /etc/apk/repositories
