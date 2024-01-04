@@ -67,6 +67,7 @@ plasma() {
     'dolphin'
     'falkon'
     'kate'
+    'kdialog'
     'konsole'
     'spectacle'
   )
