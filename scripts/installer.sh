@@ -16,9 +16,14 @@ check_path() {
 
 check_path
 
-MNT=$(mktemp -d)
+MNT="/tmp/maloneyos"
 SWAPSIZE=4
 RESERVE=1
+
+# Make MNT directory if it does not exist
+if [ ! -d "${MNT}" ]; then
+    mkdir "${MNT}"
+fi
 
 # Get a list of disk names excluding loop and sr0 devices
 disk_names=$(lsblk -o NAME -n -p -r | grep -vE "loop|sr0|[0-9]")
@@ -45,10 +50,18 @@ DISK="$selected_disk"
 # Display the selected disk
 kdialog --msgbox "You selected: $DISK" 2>/dev/null
 
+# Unmount FAT32 filesystems
+umount ${MNT}/boot/efis/${DISK##*/}1 >/dev/null 2>&1
+umount ${MNT}/boot/efi >/dev/null 2>&1
+
 # Export active zpools
 zpool export -a
 zpool labelclear bpool -f
 zpool labelclear rpool -f
+
+# Remove MNT directory and recreate it
+rm -rf "${MNT}" >/dev/null 2>&1
+mkdir "${MNT}" >/dev/null 2>&1
 
 # Ensure disk has been erased properly with wipefs
 wipefs -aq "$DISK"
@@ -135,12 +148,12 @@ mkdir -p "${MNT}"/var/lib
 mount -t zfs rpool/archlinux/var/lib "${MNT}"/var/lib
 mount -t zfs rpool/archlinux/var/log "${MNT}"/var/log
 
-# Format and mount the ESP
+# Format and mount ESP
 for i in ${DISK}; do
- mkfs.vfat -n EFI "${i}"-part1
- mkdir -p "${MNT}"/boot/efis/"${i##*/}"-part1
- mount -t vfat -o iocharset=iso8859-1 "${i}"-part1 "${MNT}"/boot/efis/"${i##*/}"-part1
+ mkfs.vfat -n EFI "${i}"1
+ mkdir -p "${MNT}"/boot/efis/"${i##*/}"1
+ mount -t vfat -o iocharset=iso8859-1 "${i}"1 "${MNT}"/boot/efis/"${i##*/}"1
 done
 
 mkdir -p "${MNT}"/boot/efi
-mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f1 -d' '|| true)"-part1 "${MNT}"/boot/efised -i '/edge/d' /etc/apk/repositories
+mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f1 -d' '|| true)"1 "${MNT}"/boot/efi
