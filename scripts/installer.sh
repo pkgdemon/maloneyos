@@ -178,11 +178,34 @@ mount -t proc none "${MNT}"/proc
 mount -t sysfs none "${MNT}"/sys
 mount -t efivarfs none "${MNT}"/sys/firmware/efi/efivars
 
-# Install GRUB for UEFI 
-chroot "${MNT}" grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+# Sync vmlinuz needed to mkinitcpio
+rsync -a /run/archiso/bootmnt/arch/boot/x86_64/ "${MNT}"/boot/
+
+# Configure mkinitcpio
+sed -i 's|filesystems|zfs filesystems|' "${MNT}"/etc/mkinitcpio.conf
+chroot "${MNT}" mkinitcpio -P
+
+# Install GRUB
+mkdir -p "${MNT}"/boot/efi/archlinux/grub-bootdir/i386-pc/
+mkdir -p "${MNT}"/boot/efi/archlinux/grub-bootdir/x86_64-efi/
+chroot "${MNT}" grub-install --target=i386-pc --boot-directory \
+  /boot/efi/archlinux/grub-bootdir/i386-pc/ ${DISK}
+chroot "${MNT}" grub-install --target x86_64-efi --boot-directory \
+ /boot/efi/archlinux/grub-bootdir/x86_64-efi/ --efi-directory \
+ /boot/efi --bootloader-id archlinux --removable
+if test -d /sys/firmware/efi/efivars/; then
+   chroot "${MNT}" grub-install --target x86_64-efi --boot-directory \
+    /boot/efi/archlinux/grub-bootdir/x86_64-efi/ --efi-directory \
+    /boot/efi --bootloader-id archlinux
+fi
 
 # Import bpool and rpool at boot
 echo 'GRUB_CMDLINE_LINUX="zfs_import_dir=/dev/"' >> "${MNT}"/etc/default/grub
 
 # Generate grub config
+mkdir -p ${MNT}/boot/grub
 chroot ${MNT} grub-mkconfig -o /boot/grub/grub.cfg
+cp "${MNT}"/boot/grub/grub.cfg \
+ "${MNT}"/boot/efi/archlinux/grub-bootdir/x86_64-efi/grub/grub.cfg
+cp "${MNT}"/boot/grub/grub.cfg \
+ "${MNT}"/boot/efi/archlinux/grub-bootdir/i386-pc/grub/grub.cfg
