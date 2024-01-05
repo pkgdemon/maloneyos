@@ -50,7 +50,11 @@ DISK="$selected_disk"
 # Display the selected disk
 kdialog --msgbox "You selected: $DISK" 2>/dev/null
 
-# Unmount filesystems
+# Unmount file  systems
+umount "${MNT}"/dev >/dev/null 2>&1
+umount "${MNT}"/proc >/dev/null 2>&1
+umount "${MNT}"/sys/firmware/efi/efivars >/dev/null 2>&1
+umount "${MNT}"/sys >/dev/null 2>&1
 umount ${MNT}/boot/efis/${DISK##*/}1 >/dev/null 2>&1
 umount ${MNT}/boot/efi >/dev/null 2>&1
 
@@ -160,3 +164,25 @@ mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f
 
 # Use unsquashfs to extract the squashfs image to the ZFS root
 unsquashfs -f -d "${MNT}" /dev/loop0
+
+# Apply Grub Workaround
+echo 'export ZPOOL_VDEV_NAME_PATH=YES' >> ${MNT}/etc/profile.d/zpool_vdev_name_path.sh
+. ${MNT}/etc/profile.d/zpool_vdev_name_path.sh
+
+# GRUB fails to detect rpool name, hard code as "rpool"
+sed -i "s|rpool=.*|rpool=rpool|"  "${MNT}"/etc/grub.d/10_linux
+
+# Mount tmp and proc for grub commands to work
+mount -t devtmpfs none "${MNT}"/dev
+mount -t proc none "${MNT}"/proc
+mount -t sysfs none "${MNT}"/sys
+mount -t efivarfs none "${MNT}"/sys/firmware/efi/efivars
+
+# Install GRUB for UEFI 
+chroot "${MNT}" grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+
+# Import bpool and rpool at boot
+echo 'GRUB_CMDLINE_LINUX="zfs_import_dir=/dev/"' >> "${MNT}"/etc/default/grub
+
+# Generate grub config
+chroot ${MNT} grub-mkconfig -o /boot/grub/grub.cfg
