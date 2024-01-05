@@ -20,6 +20,17 @@ MNT="/tmp/maloneyos"
 SWAPSIZE=4
 RESERVE=1
 
+# Check if the boot menu entry already exists
+entries=("MaloneyOS")
+for entry in "${entries[@]}"; do
+    existing_entry=$(efibootmgr | grep "$entry")
+    if [[ -n "$existing_entry" ]]; then
+        # Remove the existing entries before creating a new one
+        entry_number=$(echo "$existing_entry" | awk '{print $1}' | sed 's/Boot//' | sed 's/^00//' | tr -d '*')
+        efibootmgr -Bb "$entry_number"
+    fi
+done
+
 # Make MNT directory if it does not exist
 if [ ! -d "${MNT}" ]; then
     mkdir "${MNT}"
