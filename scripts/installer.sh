@@ -55,13 +55,11 @@ umount "${MNT}"/dev >/dev/null 2>&1
 umount "${MNT}"/proc >/dev/null 2>&1
 umount "${MNT}"/sys/firmware/efi/efivars >/dev/null 2>&1
 umount "${MNT}"/sys >/dev/null 2>&1
-umount ${MNT}/boot/efis/${DISK##*/}1 >/dev/null 2>&1
-umount ${MNT}/boot/efi >/dev/null 2>&1
+umount ${MNT}/efi >/dev/null 2>&1
 
 # Export active zpools
 zpool export -a
-zpool labelclear bpool -f 2>/dev/null
-zpool labelclear rpool -f 2>/dev/null
+zpool labelclear zroot -f 2>/dev/null
 
 # Remove MNT directory and recreate it
 rm -rf "${MNT}" >/dev/null 2>&1
@@ -70,142 +68,104 @@ mkdir "${MNT}" >/dev/null 2>&1
 # Ensure disk has been erased properly with wipefs
 wipefs -aq "$DISK"
 
+# Generate hostid
+zgenhostid
+
 # Partition the disk
-partition_disk () {
- local disk="${1}"
+sgdisk --zap-all $DISK
+sgdisk -n1:1M:+512M -t1:EF00 $DISK
+sgdisk -n2:0:0 -t2:BF00 $DISK
 
- parted --script --align=optimal  "${disk}" -- \
- mklabel gpt \
- mkpart EFI 2MiB 1GiB \
- mkpart bpool 1GiB 5GiB \
- mkpart rpool 5GiB -$((SWAPSIZE + RESERVE))GiB \
- mkpart swap  -$((SWAPSIZE + RESERVE))GiB -"${RESERVE}"GiB \
- mkpart BIOS 1MiB 2MiB \
- set 1 esp on \
- set 5 bios_grub on \
- set 5 legacy_boot on
+# Create zroot
+zpool create -f \
+ -o ashift=12 \
+ -o autotrim=on \
+ -O acltype=posixacl \
+ -O compression=zstd \
+ -O dnodesize=auto \
+ -O normalization=formD \
+ -O relatime=on \
+ -O xattr=sa \
+ -m none zroot "${DISK}"2
 
- partprobe "${disk}"
-}
+# Create datasets
+zfs create -o mountpoint=none zroot/ROOT
+zfs create -o mountpoint=/ -o canmount=noauto zroot/ROOT/arch
+zfs create -o mountpoint=/home zroot/home
 
-for i in ${DISK}; do
-   partition_disk "${i}"
-done
+# Test the pool by importing and exporting
+zpool export zroot
+zpool import -N -R "${MNT}" zroot
+zfs mount zroot/ROOT/arch
+zfs mount zroot/home
 
-# Create the boot pool
-# shellcheck disable=SC2046
-zpool create -o compatibility=legacy  \
-    -o ashift=12 \
-    -o autotrim=on \
-    -O acltype=posixacl \
-    -O canmount=off \
-    -O devices=off \
-    -O normalization=formD \
-    -O relatime=on \
-    -O xattr=sa \
-    -O mountpoint=/boot \
-    -R "${MNT}" \
-    bpool \
-    $(for i in ${DISK}; do
-       printf '%s ' "${i}2";
-      done)
-
-# Create the root pool
-zpool create \
-    -o ashift=12 \
-    -o autotrim=on \
-    -R "${MNT}" \
-    -O acltype=posixacl \
-    -O canmount=off \
-    -O compression=zstd \
-    -O dnodesize=auto \
-    -O normalization=formD \
-    -O relatime=on \
-    -O xattr=sa \
-    -O mountpoint=/ \
-    rpool \
-   $(for i in ${DISK}; do
-      printf '%s ' "${i}3";
-     done)
-
-# Create root system container
-zfs create \
- -o canmount=off \
- -o mountpoint=none \
-rpool/archlinux
-
-# Create and mount datasets
-zfs create -o canmount=noauto -o mountpoint=/  rpool/archlinux/root
-zfs mount rpool/archlinux/root
-zfs create -o mountpoint=legacy rpool/archlinux/home
-mkdir "${MNT}"/home
-mount -t zfs rpool/archlinux/home "${MNT}"/home
-zfs create -o mountpoint=legacy  rpool/archlinux/var
-zfs create -o mountpoint=legacy rpool/archlinux/var/lib
-zfs create -o mountpoint=legacy rpool/archlinux/var/log
-zfs create -o mountpoint=none bpool/archlinux
-zfs create -o mountpoint=legacy bpool/archlinux/root
-mkdir "${MNT}"/boot
-mount -t zfs bpool/archlinux/root "${MNT}"/boot
-mkdir -p "${MNT}"/var/log
-mkdir -p "${MNT}"/var/lib
-mount -t zfs rpool/archlinux/var/lib "${MNT}"/var/lib
-mount -t zfs rpool/archlinux/var/log "${MNT}"/var/log
-
-# Format and mount ESP
-for i in ${DISK}; do
- mkfs.vfat -n EFI "${i}"1
- mkdir -p "${MNT}"/boot/efis/"${i##*/}"1
- mount -t vfat -o iocharset=iso8859-1 "${i}"1 "${MNT}"/boot/efis/"${i##*/}"1
-done
-
-mkdir -p "${MNT}"/boot/efi
-mount -t vfat -o iocharset=iso8859-1 "$(echo "${DISK}" | sed "s|^ *||"  | cut -f1 -d' '|| true)"1 "${MNT}"/boot/efi
+# Create and mount the EFI partition
+mkfs.vfat -F 32 -n EFI ${DISK}1
+mkdir "${MNT}"/efi
+mount "${DISK}"1 "${MNT}"/efi
 
 # Use unsquashfs to extract the squashfs image to the ZFS root
 unsquashfs -f -d "${MNT}" /dev/loop0
 
-# Apply Grub Workaround
-echo 'export ZPOOL_VDEV_NAME_PATH=YES' >> ${MNT}/etc/profile.d/zpool_vdev_name_path.sh
-. ${MNT}/etc/profile.d/zpool_vdev_name_path.sh
-
-# GRUB fails to detect rpool name, hard code as "rpool"
-sed -i "s|rpool=.*|rpool=rpool|"  "${MNT}"/etc/grub.d/10_linux
-
-# Mount tmp and proc for grub commands to work
+# Mounts for various OS commands to work
 mount -t devtmpfs none "${MNT}"/dev
 mount -t proc none "${MNT}"/proc
 mount -t sysfs none "${MNT}"/sys
 mount -t efivarfs none "${MNT}"/sys/firmware/efi/efivars
 
-# Sync vmlinuz needed to mkinitcpio
+# Generate fstab
+genfstab -t PARTUUID "${MNT}" \
+| grep -v swap \
+| sed "s|vfat.*rw|vfat rw,x-systemd.idle-timeout=1min,x-systemd.automount,noauto,nofail|" \
+> "${MNT}"/etc/fstab
+
+# Copy files to new system
+rsync -a /etc/hostid "${MNT}"/etc/hostid
+
+# Sync vmlinuz needed for mkinitcpio
 rsync -a /run/archiso/bootmnt/arch/boot/x86_64/ "${MNT}"/boot/
 
+# Hardcode the timezone for now
+chroot "${MNT}" ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+chroot "${MNT}" hwclock --systohc
+
+# Harcode the locale for now
+chroot "${MNT}" echo "en_US.UTF-8 UTF-8" /etc/locale.gen
+chroot "${MNT}" locale-gen
+chroot "${MNT}" echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+chroot "${MNT}" echo 'KEYMAP=de_CH-latin1' > /etc/vconsole.conf
+
 # Configure mkinitcpio
-sed -i 's|filesystems|zfs filesystems|' "${MNT}"/etc/mkinitcpio.conf
+chroot "${MNT}" sed -i 's|filesystems|zfs filesystems|' /etc/mkinitcpio.conf
 chroot "${MNT}" mkinitcpio -P
 
-# Install GRUB
-mkdir -p "${MNT}"/boot/efi/archlinux/grub-bootdir/i386-pc/
-mkdir -p "${MNT}"/boot/efi/archlinux/grub-bootdir/x86_64-efi/
-chroot "${MNT}" grub-install --target=i386-pc --boot-directory \
-  /boot/efi/archlinux/grub-bootdir/i386-pc/ ${DISK}
-chroot "${MNT}" grub-install --target x86_64-efi --boot-directory \
- /boot/efi/archlinux/grub-bootdir/x86_64-efi/ --efi-directory \
- /boot/efi --bootloader-id archlinux --removable
-if test -d /sys/firmware/efi/efivars/; then
-   chroot "${MNT}" grub-install --target x86_64-efi --boot-directory \
-    /boot/efi/archlinux/grub-bootdir/x86_64-efi/ --efi-directory \
-    /boot/efi --bootloader-id archlinux
-fi
+# Set a cachefile for ZFS
+chroot "${MNT}" zpool set cachefile=/etc/zfs/zpool.cache zroot
 
-# Import bpool and rpool at boot
-echo 'GRUB_CMDLINE_LINUX="zfs_import_dir=/dev/"' >> "${MNT}"/etc/default/grub
+# Set the bootfs
+chroot "${MNT}" zpool set bootfs=zroot/ROOT/arch zroot
 
-# Generate grub config
-mkdir -p ${MNT}/boot/grub
-chroot ${MNT} grub-mkconfig -o /boot/grub/grub.cfg
-cp "${MNT}"/boot/grub/grub.cfg \
- "${MNT}"/boot/efi/archlinux/grub-bootdir/x86_64-efi/grub/grub.cfg
-cp "${MNT}"/boot/grub/grub.cfg \
- "${MNT}"/boot/efi/archlinux/grub-bootdir/i386-pc/grub/grub.cfg
+# Enable all needed daemons
+chroot "${MNT}" systemctl enable zfs-import-cache zfs-import.target zfs-mount zfs-zed zfs.target
+
+# Create EFI subfolder
+chroot "${MNT}" mkdir -p /efi/EFI/zbm
+
+# Get the latest zfsbootmenu
+wget https://get.zfsbootmenu.org/latest.EFI -O "${MNT}"/efi/EFI/zbm/zfsbootmenu.EFI
+
+# Add an entry to your boot menu
+chroot "${MNT}" efibootmgr --disk "${DISK}" --part 1 --create --label "ZFSBootMenu" --loader '\EFI\zbm\zfsbootmenu.EFI' --unicode "spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid" --verbose
+
+# Set the kernel parameters
+chroot "${MNT}" zfs set org.zfsbootmenu:commandline="noresume init_on_alloc=0 rw spl.spl_hostid=$(hostid)" zroot/ROOT
+
+# Unmount file  systems
+umount "${MNT}"/dev >/dev/null 2>&1
+umount "${MNT}"/proc >/dev/null 2>&1
+umount "${MNT}"/sys/firmware/efi/efivars >/dev/null 2>&1
+umount "${MNT}"/sys >/dev/null 2>&1
+umount "${MNT}"/efi >/dev/null 2>&1
+
+# Export active zpools
+zpool export -a

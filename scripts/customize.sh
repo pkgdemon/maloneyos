@@ -70,6 +70,7 @@ plasma() {
     'kdialog'
     'konsole'
     'spectacle'
+    'wget'
   )
 
   for package in "${packages[@]}"; do
