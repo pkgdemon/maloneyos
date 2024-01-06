@@ -7,6 +7,7 @@ if os.geteuid() != 0:
   print("Error: This script requires root privileges. Please run with 'sudo'.")
   exit(1)
 
+# Define variables
 WORKDIR="/tmp/maloneyos"
 ISO=f"{WORKDIR}/archiso-tmp"
 RELENG=f"{WORKDIR}/archlive"
@@ -19,12 +20,22 @@ def lts():
   with open(os.path.join(RELENG, "packages.x86_64"), "a") as f:
     f.write("linux-lts\n")
 
-  # Remove linux and packages that pull in linux from packages.x86_64
+  # Remove line with the exact match of "linux" from packages.x86_64
   with open(os.path.join(RELENG, "packages.x86_64"), "r+") as f:
     lines = f.readlines()
     f.seek(0)
     for line in lines:
-      if not line.startswith(("linux", "broadcom-wl", "b43-fwcutter")):
+      if "linux" in line and line.strip() == "linux":
+        continue
+      f.write(line)
+    f.truncate()
+  
+   # Remove packages that pull in linux from packages.x86_64
+  with open(os.path.join(RELENG, "packages.x86_64"), "r+") as f:
+    lines = f.readlines()
+    f.seek(0)
+    for line in lines:
+      if not line.startswith(("broadcom-wl", "b43-fwcutter")):
         f.write(line)
     f.truncate()
 
