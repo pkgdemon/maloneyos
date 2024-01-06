@@ -8,11 +8,12 @@ check-root:
 	    exit 1; \
 	fi
 
+
 release: check-root
-	cd scripts && ./cleanup.sh
-	cd scripts && ./bootstrap.sh
-	cd scripts && ./customize.sh
-	cd scripts && ./buildimage.sh
+	cd scripts && python3 cleanup.py
+	cd scripts && python3 bootstrap.py
+	cd scripts && python3 customize.py
+	cd scripts && python3 buildimage.py
 
 clean: check-root
-	cd scripts && ./cleanup.sh
+	cd scripts && python3 cleanup.py

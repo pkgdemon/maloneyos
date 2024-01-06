@@ -11,6 +11,7 @@ Live media creator for Arch Linux
 ## Requirements
 
 * archiso
+* python3
 * sddm
 
 ## Usage
