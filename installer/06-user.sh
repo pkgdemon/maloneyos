@@ -36,6 +36,7 @@ chroot /tmp/maloneyos userdel archie
 chroot /tmp/maloneyos rm -rf /home/archie
 
 # Add user with specified username
+chroot /tmp/maloneyos useradd -m -G wheel -s /usr/bin/zsh "$username"
 chroot /tmp/maloneyos useradd -m "$username"
 
 # Set password for the user
