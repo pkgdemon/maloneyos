@@ -35,9 +35,11 @@ prompt_credentials
 chroot /tmp/maloneyos userdel archie
 chroot /tmp/maloneyos rm -rf /home/archie
 
-# Add user with specified username and password
+# Add user with specified username
 chroot /tmp/maloneyos useradd -m "$username"
-chroot /tmp/maloneyos echo "$username:$password" | chpasswd
+
+# Set password for the user
+echo "$username:$password" | chroot /tmp/maloneyos chpasswd <<< "$username:$password"
 
 # Remove sddm.conf autologin
 chroot /tmp/maloneyos rm /etc/sddm.conf.d/autologin.conf
