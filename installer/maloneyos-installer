@@ -1,56 +1,11 @@
 #!/bin/bash
 
 # Check for root privileges
-if [ "$EUID" -eq 0 ]; then
+if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
     echo "Error: This script cannot be executed as root or with sudo."
     exit 1
 fi
 
-# Function to check for path to make sure we are running in arch linux livecd
-check_path() {
-    if [ ! -d "/run/archiso/cowspace" ]; then
-        echo "Error: This installer can only be run in the Arch Linux LiveCD environment."
-        exit 1
-    fi
-}
-
-check_path
-
-# Get a list of disk names excluding loop and sr0 devices
-disk_names=$(lsblk -o NAME -n -p -r | grep -vE "loop|sr0|[0-9]")
-
-# Create an array of menu items
-menu_items=()
-while read -r disk_name; do
-    menu_items+=("$disk_name" "$disk_name")
-done <<< "$disk_names"
-
-# Use kdialog to present the menu
-selected_disk=$(kdialog --menu "Select a disk:" "${menu_items[@]}" 2>/dev/null)
-
-# Check if a disk is selected
-if [ -z "$selected_disk" ] || [ "$selected_disk" == "cancel" ]; then
-    kdialog --error "Error: No disk selected. Please choose a disk." 2>/dev/null
-    selected_disk=""
-    exit 1
-fi
-
-# Store the selected disk in the DISK variable
-export DISK="$selected_disk"
-
-# Display the selected disk
-kdialog --msgbox "You selected: $DISK" 2>/dev/null
-
-# Store disk in file to be retrieved later
-echo $DISK > /tmp/selected-disk
-
-sudo ./01-zfs.sh
-python ./02-extractsfs.py
-sudo ./03-chroot.sh
-python ./04-mkinitcpio.py
-sudo ./05-bootloader.sh
-sudo ./06-user.sh
-sudo ./07-cleanup.sh
-
-# kdialog message letting us know the install is now complete
-kdialog --msgbox "Installation complete!"
+python3 /maloneyos/installer/disks.py
+pkexec /maloneyos/installer/disks.py/01-zfs.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 /maloneyos/installer/02-extractsfs.py
