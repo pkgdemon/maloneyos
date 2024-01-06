@@ -69,6 +69,7 @@ plasma() {
     'kate'
     'kdialog'
     'konsole'
+    'pyqt5'
     'spectacle'
     'wget'
   )
