@@ -7,5 +7,5 @@ if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
 fi
 
 python3 /maloneyos/installer/disks.py
-pkexec /maloneyos/installer/disks.py/01-zfs.sh
+pkexec /maloneyos/installer/01-zfs.sh
 pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 /maloneyos/installer/02-extractsfs.py
