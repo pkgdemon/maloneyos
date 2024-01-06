@@ -108,11 +108,13 @@ def plasma():
     "plasma-desktop",
     "plasma-wayland-session",
     "ark",
+    "discover"
     "dolphin",
-    "falkon",
+    "flatpak"
     "kate",
     "kdialog",
     "konsole",
+    "git",
     "pyqt5",
     "spectacle",
     "wget"
