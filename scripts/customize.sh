@@ -120,8 +120,8 @@ user()
 
   # Add archie to sudoers
   mkdir -p "$sudoers_dir"
-  echo 'archie ALL=(ALL) ALL' >> "$sudoers_dir/00_archie"
-  echo 'archie ALL=(ALL) ALL' >> "$sudoers_dir/00_archie"
+  echo 'archie ALL=(ALL) NOPASSWD: ALL' >> "$sudoers_dir/00_archie"
+  echo 'archie ALL=(ALL) NOPASSWD: ALL' >> "$sudoers_dir/00_archie"
 }
 
 lts
