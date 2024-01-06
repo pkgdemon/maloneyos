@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import subprocess
 
 # Check for root privileges
 if os.geteuid() != 0:
@@ -108,16 +109,16 @@ def plasma():
     "plasma-desktop",
     "plasma-wayland-session",
     "ark",
-    "discover"
+    "discover",
     "dolphin",
-    "flatpak"
+    "flatpak",
     "kate",
     "kdialog",
     "konsole",
     "git",
     "pyqt5",
     "spectacle",
-    "wget"
+    "wget",
   ]
   with open(os.path.join(RELENG, "packages.x86_64"), "a") as f:
     for package in packages:

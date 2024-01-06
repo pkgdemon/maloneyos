@@ -8,6 +8,7 @@ if os.geteuid() != 0:
     print("Error: This script requires root privileges. Please run with 'sudo'.")
     exit(1)
 
+# Define variables
 WORKDIR="/tmp/maloneyos"
 ISO=f"{WORKDIR}/archiso-tmp"
 RELENG=f"{WORKDIR}/archlive"
