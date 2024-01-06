@@ -19,6 +19,9 @@ check_path
 MNT="/tmp/maloneyos"
 DISK=$(cat /tmp/selected-disk)
 
+# Remove installer from installed system
+rm -rf "${MNT}"/maloneyos
+
 # Unmount file  systems
 umount "${MNT}"/dev >/dev/null 2>&1
 umount "${MNT}"/proc >/dev/null 2>&1

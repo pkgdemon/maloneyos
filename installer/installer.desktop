@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Install MaloneyOS
-Exec=/home/archie/maloneyos/installer/maloneyos-installer
+Exec=/maloneyos/installer/maloneyos-installer
 Icon=/usr/share/icons/breeze/devices/symbolic/drive-harddisk-symbolic.svg
 Type=Application
 Categories=Utility;

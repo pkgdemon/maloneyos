@@ -12,7 +12,6 @@ check-root:
 release: check-root
 	cd scripts && python3 cleanup.py
 	cd scripts && python3 bootstrap.py
-	cd scripts && python3 customize.py
 	cd scripts && python3 buildimage.py
 
 clean: check-root
