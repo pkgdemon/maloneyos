@@ -27,13 +27,14 @@ class CommandRunner(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        # Run commands when the application opens
-        self.run_commands()
+        # Connect the window's show event to the run_commands function
+        self.showEvent = self.run_commands
 
-    def run_commands(self):
+    def run_commands(self, event):
+        # Run commands when the window is shown
         commands = [
             "python zfs.py",
-            "echo 'Hello, World!'",
+            "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
             "pwd"
         ]
 
