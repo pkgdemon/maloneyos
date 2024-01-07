@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # Check for root privileges
-if [ "$EUID" -ne 0 ] || [ "$(id -u)" -ne 0 ]; then
-    echo "Error: This script must be executed as root or with sudo."
+if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+    echo "Error: This script must not be executed as root or with sudo."
     exit 1
 fi
 
 INSTALLER="/maloneyos/installer"
 
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/disks.py
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/zfs.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/squashfs.py
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/chroot.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/makeinitcpio.py
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/bootloader.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/user.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/cleanup.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/finalize.py
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/disks.py
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/zfs.sh
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/squashfs.py
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/chroot.sh
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/makeinitcpio.py
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/bootloader.sh
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/user.sh
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/cleanup.sh
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/finalize.py
