@@ -6,6 +6,15 @@ if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
-python3 /maloneyos/installer/disks.py
-pkexec /maloneyos/installer/01-zfs.sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 /maloneyos/installer/02-extractsfs.py
+CMD=$(sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3)
+INSTALLER="/maloneyos/installer"
+
+${CMD} ${INSTALLER}/disks.py
+${CMD} ${INSTALLER}/zfs.sh
+${CMD} ${INSTALLER}/squashfs.py
+${CMD} ${INSTALLER}/chroot.sh
+${CMD} ${INSTALLER}/makeinitcpio.py
+${CMD} ${INSTALLER}/bootloader.sh
+${CMD} ${INSTALLER}/user.sh
+${CMD} ${INSTALLER}/cleanup.sh
+${CMD} ${INSTALLER}/finalize.py
