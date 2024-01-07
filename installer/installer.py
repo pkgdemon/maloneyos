@@ -30,9 +30,10 @@ class MaloneyOS(QWidget):
         # Use subprocess to get disks with lsblk and populate them in the window
         disks = subprocess.check_output(["lsblk", "-d", "-n", "-o", "NAME"]).decode().splitlines()
         for disk in disks:
-            disk_button = QPushButton(disk)
-            disk_button.clicked.connect(lambda _, disk=disk: self.select_disk(disk))
-            disk_selection_layout.addWidget(disk_button)
+            if not any(char.isdigit() for char in disk):
+                disk_button = QPushButton(disk)
+                disk_button.clicked.connect(lambda _, disk=disk: self.select_disk(disk))
+                disk_selection_layout.addWidget(disk_button)
         next_button = QPushButton("Next")
         next_button.clicked.connect(self.show_user_creation)
         next_button.setEnabled(False)
