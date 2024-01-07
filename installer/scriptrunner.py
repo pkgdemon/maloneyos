@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton
-from PyQt5.QtCore import QProcess, QByteArray
+from PyQt5.QtCore import QProcess, QTimer, QCoreApplication
 
 class CommandRunner(QMainWindow):
     def __init__(self):
@@ -28,6 +28,8 @@ class CommandRunner(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def run_commands(self):
+        self.run_button.setDisabled(True)  # Disable the button during execution
+
         commands = [
             "python zfs.py",
             "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
@@ -41,6 +43,7 @@ class CommandRunner(QMainWindow):
 
             # Read the output in real-time
             while process.state() == QProcess.Running:
+                QCoreApplication.processEvents()  # Allow GUI to update
                 process.waitForReadyRead()
                 self.read_output()
 
@@ -49,6 +52,7 @@ class CommandRunner(QMainWindow):
         self.run_button.setText("Restart System")
         self.run_button.clicked.disconnect(self.run_commands)
         self.run_button.clicked.connect(self.restart_system)
+        self.run_button.setDisabled(False)  # Re-enable the button
 
     def read_output(self):
         process = self.sender()
