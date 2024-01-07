@@ -1,20 +1,20 @@
 #!/bin/bash
 
 # Check for root privileges
-if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
-    echo "Error: This script cannot be executed as root or with sudo."
+if [ "$EUID" -ne 0 ] || [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be executed as root or with sudo."
     exit 1
 fi
 
-CMD=$(sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3)
+ARGS=$(env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY)
 INSTALLER="/maloneyos/installer"
 
-${CMD} ${INSTALLER}/disks.py
-${CMD} ${INSTALLER}/zfs.sh
-${CMD} ${INSTALLER}/squashfs.py
-${CMD} ${INSTALLER}/chroot.sh
-${CMD} ${INSTALLER}/makeinitcpio.py
-${CMD} ${INSTALLER}/bootloader.sh
-${CMD} ${INSTALLER}/user.sh
-${CMD} ${INSTALLER}/cleanup.sh
-${CMD} ${INSTALLER}/finalize.py
+pkexec ${ARGS} python3 ${INSTALLER}/disks.py
+pkexec ${ARGS} bash ${INSTALLER}/zfs.sh
+pkexec ${ARGS} python3 ${INSTALLER}/squashfs.py
+pkexec ${ARGS} bash ${INSTALLER}/chroot.sh
+pkexec ${ARGS} python3 ${INSTALLER}/makeinitcpio.py
+pkexec ${ARGS} bash ${INSTALLER}/bootloader.sh
+pkexec ${ARGS} bash ${INSTALLER}/user.sh
+pkexec ${ARGS} bash ${INSTALLER}/cleanup.sh
+pkexec ${ARGS} bash ${INSTALLER}/finalize.py
