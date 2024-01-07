@@ -6,15 +6,14 @@ if [ "$EUID" -ne 0 ] || [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-ARGS=$(env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY)
 INSTALLER="/maloneyos/installer"
 
-pkexec ${ARGS} python3 ${INSTALLER}/disks.py
-pkexec ${ARGS} bash ${INSTALLER}/zfs.sh
-pkexec ${ARGS} python3 ${INSTALLER}/squashfs.py
-pkexec ${ARGS} bash ${INSTALLER}/chroot.sh
-pkexec ${ARGS} python3 ${INSTALLER}/makeinitcpio.py
-pkexec ${ARGS} bash ${INSTALLER}/bootloader.sh
-pkexec ${ARGS} bash ${INSTALLER}/user.sh
-pkexec ${ARGS} bash ${INSTALLER}/cleanup.sh
-pkexec ${ARGS} bash ${INSTALLER}/finalize.py
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/disks.py
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/zfs.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/squashfs.py
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/chroot.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/makeinitcpio.py
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/bootloader.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/user.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/cleanup.sh
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/finalize.py
