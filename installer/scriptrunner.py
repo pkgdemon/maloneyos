@@ -8,7 +8,7 @@ class CommandRunner(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Command Runner")
+        self.setWindowTitle("MaloneyOS Installer")
         self.setGeometry(100, 100, 600, 400)
 
         self.output_text = QTextEdit()
@@ -16,25 +16,21 @@ class CommandRunner(QMainWindow):
 
         self.scrollbar = self.output_text.verticalScrollBar()
 
-        self.restart_button = QPushButton("Restart System")
-        self.restart_button.clicked.connect(self.restart_system)
+        self.run_button = QPushButton("Click to Install")
+        self.run_button.clicked.connect(self.run_commands)
 
         layout = QVBoxLayout()
         layout.addWidget(self.output_text)
-        layout.addWidget(self.restart_button)
+        layout.addWidget(self.run_button)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        # Connect the window's show event to the run_commands function
-        self.showEvent = self.run_commands
-
-    def run_commands(self, event):
-        # Run commands when the window is shown
+    def run_commands(self):
         commands = [
-            "python zfs.py",
-            "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
+            "ls -l",
+            "echo 'Hello, World!'",
             "pwd"
         ]
 
@@ -42,33 +38,19 @@ class CommandRunner(QMainWindow):
             process = QProcess()
             process.start(command)
             process.waitForFinished(-1)
-            exit_code = process.exitCode()
-            if exit_code != 0:
-                error_output = process.readAllStandardError().data().decode()
-                self.output_text.append(f"Command failed: {command}")
-                self.output_text.append(f"Error output: {error_output}")
-                break
-            else:
-                output = process.readAllStandardOutput().data().decode()
-                self.output_text.append(output)
+            output = process.readAllStandardOutput().data().decode()
+            self.output_text.append(output)
 
             # Scroll to the bottom of the output
             self.scrollbar.setValue(self.scrollbar.maximum())
 
+        self.run_button.setText("Restart System")
+        self.run_button.clicked.disconnect(self.run_commands)
+        self.run_button.clicked.connect(self.restart_system)
+
     def restart_system(self):
         process = QProcess()
         process.start("shutdown -r now")
-        process.waitForFinished(-1)
-        exit_code = process.exitCode()
-        if exit_code != 0:
-            error_output = process.readAllStandardError().data().decode()
-            self.output_text.append("Restart command failed")
-            self.output_text.append(f"Error output: {error_output}")
-        else:
-            self.output_text.append("System restarted successfully")
-
-        # Scroll to the bottom of the output
-        self.scrollbar.setValue(self.scrollbar.maximum())
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
