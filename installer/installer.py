@@ -22,9 +22,14 @@ class CommandRunner(QMainWindow):
         self.run_button = QPushButton("Click to Install")
         self.run_button.clicked.connect(self.run_commands)
 
+        self.restart_button = QPushButton("Restart System")
+        self.restart_button.clicked.connect(self.restart_system)
+        self.restart_button.setEnabled(False)  # Disable restart button initially
+
         layout = QVBoxLayout()
         layout.addWidget(self.output_text)
         layout.addWidget(self.run_button)
+        layout.addWidget(self.restart_button)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -32,9 +37,10 @@ class CommandRunner(QMainWindow):
 
         self.worker_thread = WorkerThread()
         self.worker_thread.output_signal.connect(self.read_output)
+        self.worker_thread.finished.connect(self.enable_restart_button)
 
     def run_commands(self):
-        self.run_button.setDisabled(True)  # Disable the button during execution
+        self.run_button.setDisabled(True)  # Disable the "Click to Install" button during execution
         self.worker_thread.start()
 
     def read_output(self, output):
@@ -43,9 +49,15 @@ class CommandRunner(QMainWindow):
         # Scroll to the bottom of the output
         self.scrollbar.setValue(self.scrollbar.maximum())
 
+    def enable_restart_button(self):
+        self.run_button.setDisabled(False)  # Enable the "Click to Install" button
+        self.restart_button.setEnabled(True)  # Enable the "Restart System" button
+
     def restart_system(self):
-        # Implement restart system logic here
-        pass
+        try:
+            subprocess.run(["shutdown", "-r", "now"])
+        except Exception as e:
+            self.output_text.append(f"Error restarting system: {str(e)}")
 
 class WorkerThread(QThread):
     output_signal = pyqtSignal(str)
