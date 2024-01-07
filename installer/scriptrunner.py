@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton
-from PyQt5.QtCore import QProcess
+from PyQt5.QtCore import QProcess, QByteArray
 
 class CommandRunner(QMainWindow):
     def __init__(self):
@@ -36,17 +36,27 @@ class CommandRunner(QMainWindow):
 
         for command in commands:
             process = QProcess()
+            process.readyReadStandardOutput.connect(self.read_output)
             process.start(command)
-            process.waitForFinished(-1)
-            output = process.readAllStandardOutput().data().decode()
-            self.output_text.append(output)
 
-            # Scroll to the bottom of the output
-            self.scrollbar.setValue(self.scrollbar.maximum())
+            # Read the output in real-time
+            while process.state() == QProcess.Running:
+                process.waitForReadyRead()
+                self.read_output()
+
+            process.waitForFinished(-1)
 
         self.run_button.setText("Restart System")
         self.run_button.clicked.disconnect(self.run_commands)
         self.run_button.clicked.connect(self.restart_system)
+
+    def read_output(self):
+        process = self.sender()
+        output = process.readAllStandardOutput().data().decode()
+        self.output_text.append(output)
+
+        # Scroll to the bottom of the output
+        self.scrollbar.setValue(self.scrollbar.maximum())
 
     def restart_system(self):
         process = QProcess()
