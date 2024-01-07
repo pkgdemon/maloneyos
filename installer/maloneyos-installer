@@ -12,7 +12,7 @@ sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/dis
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/zfs.sh
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/squashfs.py
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/chroot.sh
-sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/makeinitcpio.py
+sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY python3 ${INSTALLER}/mkinitcpio.py
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/bootloader.sh
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/user.sh
 sudo pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY bash ${INSTALLER}/cleanup.sh
