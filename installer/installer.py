@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+
 import sys
 import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QStackedWidget, QLineEdit
+import os
 import subprocess
 
 class MaloneyOS(QWidget):
@@ -68,38 +71,6 @@ class MaloneyOS(QWidget):
         user_creation_page.setLayout(user_creation_layout)
         self.stacked_widget.addWidget(user_creation_page)
 
-        # Installation Page
-        installation_page = QWidget()
-        installation_layout = QVBoxLayout()
-
-        # Run zfs.py and squashfs.py scripts here and show terminal output
-        def run_zfs_script():
-            try:
-                output = subprocess.check_output(["python", "zfs.py"])
-                print(output.decode())
-            except subprocess.CalledProcessError as e:
-                print(f"Error running zfs.py: {e}")
-
-        run_zfs_script()
-        next_button = QPushButton("Next")
-        next_button.clicked.connect(self.show_installation_finished)
-        next_button.setEnabled(False)
-        self.next_button_installation = next_button
-        installation_layout.addWidget(next_button)
-        installation_page.setLayout(installation_layout)
-        self.stacked_widget.addWidget(installation_page)
-
-        # Installation Finished Page
-        installation_finished_page = QWidget()
-        installation_finished_layout = QVBoxLayout()
-        finished_label = QLabel("Installation finished!")
-        installation_finished_layout.addWidget(finished_label)
-        restart_button = QPushButton("Restart")
-        restart_button.clicked.connect(self.restart)
-        installation_finished_layout.addWidget(restart_button)
-        installation_finished_page.setLayout(installation_finished_layout)
-        self.stacked_widget.addWidget(installation_finished_page)
-
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(self.stacked_widget)
 
@@ -121,16 +92,14 @@ class MaloneyOS(QWidget):
         else:
             self.next_button_user.setEnabled(False)
 
+
+
     def show_installation(self):
         self.USERNAME = self.username_input.text()
         self.PASSWORD = self.password_input.text()
         self.stacked_widget.setCurrentIndex(3)
-
-    def show_installation_finished(self):
-        self.stacked_widget.setCurrentIndex(4)
-
-    def restart(self):
-        subprocess.run(["shutdown", "-r", "now"])
+        #subprocess.Popen(["python3", "scriptrunner.py"])
+        sys.exit()  # Add this line to exit the application
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
