@@ -29,8 +29,8 @@ class CommandRunner(QMainWindow):
 
     def run_commands(self):
         commands = [
-            "ls -l",
-            "echo 'Hello, World!'",
+            "python zfs.py",
+            "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
             "pwd"
         ]
 
@@ -51,6 +51,10 @@ class CommandRunner(QMainWindow):
     def restart_system(self):
         process = QProcess()
         process.start("shutdown -r now")
+        process.waitForFinished(-1)  # Wait for the shutdown process to finish
+
+        # Exit the application
+        QApplication.quit()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
