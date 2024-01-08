@@ -90,8 +90,8 @@ subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmwa
 
 # Generate fstab
 subprocess.run(["genfstab", "-t", "PARTUUID", MNT], capture_output=True)
-output = subprocess.run(["grep", "-v", "swap"], input=OutputChecker.stdout, capture_output=True, text=True)
-output = subprocess.run(["sed", "s|vfat.*rw|vfat rw,x-systemd.idle-timeout=1min,x-systemd.automount,noauto,nofail|"], input=output.stdout, capture_output=True, text=True)
+output = subprocess.run(["grep", "-v", "swap"], capture_output=True, text=True, input=subprocess.PIPE)
+output = subprocess.run(["sed", "s|vfat.*rw|vfat rw,x-systemd.idle-timeout=1min,x-systemd.automount,noauto,nofail|"], capture_output=True, text=True, input=output.stdout)
 with open(os.path.join(MNT, "etc/fstab"), "w") as f:
     f.write(output.stdout)
 subprocess.run(["sed", "-i", "/zroot/d", os.path.join(MNT, "etc/fstab")])
