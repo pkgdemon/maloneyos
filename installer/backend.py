@@ -94,8 +94,12 @@ subprocess.run(["sed", "-i", "/zroot/d", os.path.join(MNT, "etc/fstab")])
 # Copy files to new system
 shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
-# Sync vmlinuz needed for mkinitcpio
+# Copy vmlinuz needed for mkinitcpio to installed system
 shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
+
+# Copy microcode updates to installed system
+shutil.copy2("/run/archiso/bootmnt/arch/boot/amd-ucode.img", os.path.join(MNT, "boot/"))
+shutil.copy2("/run/archiso/bootmnt/arch/boot/intel-ucode.img", os.path.join(MNT, "boot/"))
 
 # Generate proper preset for installed system
 os.remove(os.path.join(MNT, "etc/mkinitcpio.conf.d/archiso.conf"))
@@ -126,6 +130,7 @@ subprocess.run(["chroot", MNT, "echo", "KEYMAP=de_CH-latin1", ">", "/etc/vconsol
 
 # Configure mkinitcpio
 subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/etc/mkinitcpio.conf"])
+subprocess.run(["chroot", MNT, "sed", "-i", "s|fsck||", "/etc/mkinitcpio.conf"])
 
 # Run mkinitcpio
 subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"])
