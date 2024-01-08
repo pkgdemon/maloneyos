@@ -93,7 +93,7 @@ class MaloneyOS(QWidget):
             self.next_button_user.setEnabled(False)
 
     def output_disk_value(self):
-        disk_value = self.DISK
+        disk_value = "/dev/" + self.DISK
         with open('/tmp/selected-disk', 'w') as file:
             file.write(disk_value)
 
