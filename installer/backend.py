@@ -95,7 +95,7 @@ subprocess.run(["sed", "-i", "/zroot/d", os.path.join(MNT, "etc/fstab")])
 shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
 # Sync vmlinuz needed for mkinitcpio
-shutil.copytree("/run/archiso/bootmnt/arch/boot/x86_64/", os.path.join(MNT, "boot/"))
+shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
 
 # Generate proper preset for installed system
 os.remove(os.path.join(MNT, "etc/mkinitcpio.conf.d/archiso.conf"))
