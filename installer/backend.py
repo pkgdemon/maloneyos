@@ -8,6 +8,8 @@ MNT = "/tmp/maloneyos"
 SWAPSIZE = 4
 RESERVE = 1
 DISK = open("/tmp/selected-disk").read().strip()
+USERNAME = open("/tmp/username").read().strip()
+PASSWORD = open("/tmp/password").read().strip()
 
 # Check if the boot menu entry already exists
 entries = ["MaloneyOS"]
@@ -131,3 +133,58 @@ subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/
 
 # Run mkinitcpio
 subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"])
+
+# Set a cachefile for ZFS
+subprocess.run(["chroot", MNT, "zpool", "set", "cachefile=/etc/zfs/zpool.cache", "zroot"])
+
+# Set the bootfs
+subprocess.run(["chroot", MNT, "zpool", "set", "bootfs=zroot/ROOT/arch", "zroot"])
+
+# Enable all needed daemons
+subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"])
+
+# Create EFI subfolder
+subprocess.run(["chroot", MNT, "mkdir", "-p", "/efi/EFI/zbm"])
+
+# Get the latest zfsbootmenu
+subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{MNT}/efi/EFI/zbm/zfsbootmenu.EFI"])
+
+# Add an entry to your boot menu
+subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", f"spl_hostid={os.hostid()} zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"])
+
+# Set the kernel parameters
+subprocess.run(["chroot", MNT, "zfs", "set", "org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid={os.hostid()}", "zroot/ROOT"])
+
+# Remove user "archie" from chroot
+subprocess.run(["chroot", "/tmp/maloneyos", "userdel", "archie"])
+subprocess.run(["chroot", "/tmp/maloneyos", "rm", "-rf", "/home/archie"])
+
+# Add user with specified username
+subprocess.run(["chroot", "/tmp/maloneyos", "useradd", "-m", "-G", "wheel", "-s", "/usr/bin/zsh", USERNAME])
+subprocess.run(["chroot", "/tmp/maloneyos", "useradd", "-m", USERNAME])
+
+# Set PASSWORD for the user
+subprocess.run(["chroot", "/tmp/maloneyos", "chpasswd"], input=f"{USERNAME}:{PASSWORD}\n", text=True)
+
+# Remove sddm.conf autologin
+subprocess.run(["chroot", "/tmp/maloneyos", "rm", "/etc/sddm.conf.d/autologin.conf"])
+
+sudoers_dir = "/tmp/maloneyos/etc/sudoers.d"
+os.remove(f"{sudoers_dir}/00_archie")
+
+with open(f"{sudoers_dir}/00_{USERNAME}", "w") as sudoers_file:
+    sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
+    sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
+
+# Remove installer from installed system
+subprocess.run(["rm", "-rf", f"{MNT}/maloneyos"])
+
+# Unmount file systems
+subprocess.run(["umount", f"{MNT}/dev"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(["umount", f"{MNT}/proc"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(["umount", f"{MNT}/sys/firmware/efi/efivars"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(["umount", f"{MNT}/sys"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(["umount", f"{MNT}/efi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+# Export active zpools
+subprocess.run(["zpool", "export", "-a"])

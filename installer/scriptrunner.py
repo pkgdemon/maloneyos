@@ -63,9 +63,7 @@ class WorkerThread(QThread):
 
     def run(self):
         commands = [
-            "python zfs.py",
-            "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
-            "pwd"
+            "python3 backened.py"
         ]
 
         for command in commands:
