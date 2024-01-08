@@ -88,7 +88,7 @@ subprocess.run(["mount", "-t", "sysfs", "none", os.path.join(MNT, "sys")])
 subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")])
 
 # Generate fstab
-subprocess.run(["genfstab", "-t", "PARTUUID", MNT], capture_output=True)
+subprocess.run(["genfstab", "-t", "PARTUUID", MNT], capture_output=True, text=True, check=True, shell=True, stdout=open(os.path.join(MNT, "etc/fstab"), "w"))
 subprocess.run(["sed", "-i", "/zroot/d", os.path.join(MNT, "etc/fstab")])
 
 # Copy files to new system
