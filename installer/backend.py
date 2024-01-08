@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from doctest import OutputChecker
 import os
 import shutil
 import subprocess
@@ -89,7 +90,7 @@ subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmwa
 
 # Generate fstab
 subprocess.run(["genfstab", "-t", "PARTUUID", MNT], capture_output=True)
-output = subprocess.run(["grep", "-v", "swap"], input=output.stdout, capture_output=True, text=True)
+output = subprocess.run(["grep", "-v", "swap"], input=OutputChecker.stdout, capture_output=True, text=True)
 output = subprocess.run(["sed", "s|vfat.*rw|vfat rw,x-systemd.idle-timeout=1min,x-systemd.automount,noauto,nofail|"], input=output.stdout, capture_output=True, text=True)
 with open(os.path.join(MNT, "etc/fstab"), "w") as f:
     f.write(output.stdout)
