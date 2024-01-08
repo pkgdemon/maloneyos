@@ -157,7 +157,6 @@ subprocess.run(["chroot", "/tmp/maloneyos", "rm", "-rf", "/home/archie"])
 
 # Add user with specified username
 subprocess.run(["chroot", "/tmp/maloneyos", "useradd", "-m", "-G", "wheel", "-s", "/usr/bin/zsh", USERNAME])
-subprocess.run(["chroot", "/tmp/maloneyos", "useradd", "-m", USERNAME])
 
 # Set PASSWORD for the user
 subprocess.run(["chroot", "/tmp/maloneyos", "chpasswd"], input=f"{USERNAME}:{PASSWORD}\n", text=True)
