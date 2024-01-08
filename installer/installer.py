@@ -147,6 +147,7 @@ class MaloneyOSInstaller(QWidget):
 
     def run_commands(self):
         if not self.commands_executed:
+            self.install_restart_button.setDisabled(True)
             self.worker_thread.start()
             self.commands_executed = True
 
@@ -154,6 +155,7 @@ class MaloneyOSInstaller(QWidget):
         self.output_text.append(output)
 
     def show_restart_button(self):
+        self.install_restart_button.setEnabled(True)
         self.install_restart_button.hide()
         self.restart_system_button.show()
         self.output_text.append("All commands have finished.")
