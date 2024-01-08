@@ -134,7 +134,7 @@ subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"])
 subprocess.run(["chroot", MNT, "zpool", "set", "cachefile=/etc/zfs/zpool.cache", "zroot"])
 
 # Set the bootfs
-subprocess.run(["chroot", MNT, "zpool", "set", "bootfs=zroot/ROOT/arch", "zroot"])
+subprocess.run(["chroot", MNT, "zpool", "set", f"bootfs=zroot/ROOT/arch", "zroot"])
 
 # Enable all needed daemons
 subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"])
@@ -146,10 +146,10 @@ subprocess.run(["chroot", MNT, "mkdir", "-p", "/efi/EFI/zbm"])
 subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{MNT}/efi/EFI/zbm/zfsbootmenu.EFI"])
 
 # Add an entry to your boot menu
-subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", f"spl_hostid={os.hostid()} zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"])
+subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", f"spl_hostid={hostid} zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"])
 
 # Set the kernel parameters
-subprocess.run(["chroot", MNT, "zfs", "set", "org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid={os.hostid()}", "zroot/ROOT"])
+subprocess.run(["chroot", MNT, "zfs", "set", f"org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid={hostid}", "zroot/ROOT"])
 
 # Remove user "archie" from chroot
 subprocess.run(["chroot", "/tmp/maloneyos", "userdel", "archie"])
