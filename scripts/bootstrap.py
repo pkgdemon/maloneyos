@@ -192,6 +192,7 @@ def desktop_shortcut():
   os.makedirs(desktop_folder, exist_ok=True)
   shutil.copy(installer_desktop, desktop_folder)
   subprocess.run(["chown", "-R", "1000:1000", desktop_folder])
+  subprocess.run(["chmod", "+x", installer_desktop])
 
 config()
 lts()
