@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Install MaloneyOS
-Exec=sudo python3 /maloneyos/installer/installer.py
+Path=/maloneyos/installer
+Exec=sudo python3 installer.py
 Icon=/usr/share/icons/breeze/devices/symbolic/drive-harddisk-symbolic.svg
 Type=Application
 Categories=Utility;
