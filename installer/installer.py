@@ -92,12 +92,25 @@ class MaloneyOS(QWidget):
         else:
             self.next_button_user.setEnabled(False)
 
+    def output_disk_value(self):
+        disk_value = self.DISK
+        with open('/tmp/selected-disk', 'w') as file:
+            file.write(disk_value)
 
+    def output_credentials(self):
+        username_value = self.USERNAME
+        password_value = self.PASSWORD
+        with open('/tmp/username', 'w') as username_file:
+            username_file.write(username_value)
+        with open('/tmp/password', 'w') as password_file:
+            password_file.write(password_value)
 
     def show_installation(self):
         self.USERNAME = self.username_input.text()
         self.PASSWORD = self.password_input.text()
         self.stacked_widget.setCurrentIndex(3)
+        self.output_disk_value()
+        self.output_credentials()
         #subprocess.Popen(["python3", "scriptrunner.py"])
         sys.exit()  # Add this line to exit the application
 
