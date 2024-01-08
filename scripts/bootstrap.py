@@ -176,7 +176,13 @@ def user():
     f.seek(0)
     f.write(content)
     f.truncate()
-
+  with open(os.path.join(RELENG, "profiledef.sh"), "r+") as f:
+    content = f.read()
+    content = content.replace('["/usr/local/bin/livecd-sound"]="0:0:755"', '["/usr/local/bin/livecd-sound"]="0:0:755"\n  ["/home/archie/Desktop/installer.desktop"]="0:0:755"')
+    f.seek(0)
+    f.write(content)
+    f.truncate()
+  
   # Add archie to sudoers
   os.makedirs(sudoers_dir, exist_ok=True)
   with open(os.path.join(sudoers_dir, "00_archie"), "w") as f:
