@@ -14,33 +14,19 @@ check_path() {
     fi
 }
 
-# Prompt for username, password, and confirm password using kdialog
-prompt_credentials() {
-    username=$(kdialog --title "Enter Username" --inputbox "Please enter your username:")
-    password=$(kdialog --title "Enter Password" --password "Please enter your password:")
-    confirm_password=$(kdialog --title "Confirm Password" --password "Please confirm your password:")
-
-    # Check if passwords match
-    while [ "$password" != "$confirm_password" ]; do
-        kdialog --title "Password Mismatch" --error "Passwords do not match. Please try again."
-        password=$(kdialog --title "Enter Password" --password "Please enter your password:")
-        confirm_password=$(kdialog --title "Confirm Password" --password "Please confirm your password:")
-    done
-}
-
-check_path
-prompt_credentials
+USERNAME=$(cat /tmp/username)
+PASSWORD=$(cat /tmp/password)
 
 # Remove user "archie" from chroot
 chroot /tmp/maloneyos userdel archie
 chroot /tmp/maloneyos rm -rf /home/archie
 
 # Add user with specified username
-chroot /tmp/maloneyos useradd -m -G wheel -s /usr/bin/zsh "$username"
-chroot /tmp/maloneyos useradd -m "$username"
+chroot /tmp/maloneyos useradd -m -G wheel -s /usr/bin/zsh "$USERNAME"
+chroot /tmp/maloneyos useradd -m "$USERNAME"
 
-# Set password for the user
-echo "$username:$password" | chroot /tmp/maloneyos chpasswd <<< "$username:$password"
+# Set PASSWORD for the user
+echo "$USERNAME:$PASSWORD" | chroot /tmp/maloneyos chpasswd <<< "$USERNAME:$PASSWORD"
 
 # Remove sddm.conf autologin
 chroot /tmp/maloneyos rm /etc/sddm.conf.d/autologin.conf
@@ -48,5 +34,5 @@ chroot /tmp/maloneyos rm /etc/sddm.conf.d/autologin.conf
 sudoers_dir="/tmp/maloneyos/etc/sudoers.d"
 rm "$sudoers_dir/00_archie"
 
-echo "$username ALL=(ALL) ALL" >> "$sudoers_dir/00_$username"
-echo "$username ALL=(ALL) ALL" >> "$sudoers_dir/00_$username"
+echo "$USERNAME ALL=(ALL) ALL" >> "$sudoers_dir/00_$USERNAME"
+echo "$USERNAME ALL=(ALL) ALL" >> "$sudoers_dir/00_$USERNAME"
