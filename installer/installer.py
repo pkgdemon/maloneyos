@@ -111,7 +111,7 @@ class MaloneyOS(QWidget):
         self.stacked_widget.setCurrentIndex(3)
         self.output_disk_value()
         self.output_credentials()
-        #subprocess.Popen(["python3", "scriptrunner.py"])
+        subprocess.Popen(["python3", "scriptrunner.py"])
         sys.exit()  # Add this line to exit the application
 
 if __name__ == "__main__":
