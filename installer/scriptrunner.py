@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton
-from PyQt5.QtCore import QProcess, QTimer, QCoreApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QProcess, QIODevice
 
 class CommandRunner(QMainWindow):
     def __init__(self):
@@ -16,20 +16,52 @@ class CommandRunner(QMainWindow):
 
         self.scrollbar = self.output_text.verticalScrollBar()
 
-        self.run_button = QPushButton("Click to Install")
-        self.run_button.clicked.connect(self.run_commands)
+        self.install_restart_button = QPushButton("Click to Install")
+        self.install_restart_button.clicked.connect(self.run_commands)
 
         layout = QVBoxLayout()
         layout.addWidget(self.output_text)
-        layout.addWidget(self.run_button)
+        layout.addWidget(self.install_restart_button)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-    def run_commands(self):
-        self.run_button.setDisabled(True)  # Disable the button during execution
+        self.worker_thread = WorkerThread()
+        self.worker_thread.output_signal.connect(self.read_output)
+        self.worker_thread.finished.connect(self.show_restart_button)
 
+        self.commands_executed = False  # Flag to track if commands have been executed
+
+    def run_commands(self):
+        if not self.commands_executed:
+            self.install_restart_button.setDisabled(True)  # Disable the button during execution
+            self.worker_thread.start()
+            self.commands_executed = True
+        else:
+            self.restart_system()
+
+    def read_output(self, output):
+        self.output_text.append(output)
+
+        # Scroll to the bottom of the output
+        self.scrollbar.setValue(self.scrollbar.maximum())
+
+    def show_restart_button(self):
+        self.install_restart_button.setText("Restart System")
+        self.install_restart_button.setEnabled(True)
+
+    def restart_system(self):
+        try:
+            process = QProcess()
+            process.startDetached("shutdown", ["-r", "now"])
+        except Exception as e:
+            self.output_text.append(f"Error restarting system: {str(e)}")
+
+class WorkerThread(QThread):
+    output_signal = pyqtSignal(str)
+
+    def run(self):
         commands = [
             "python zfs.py",
             "unsquashfs -f -d /tmp/maloneyos /dev/loop0",
@@ -37,38 +69,23 @@ class CommandRunner(QMainWindow):
         ]
 
         for command in commands:
-            process = QProcess()
-            process.readyReadStandardOutput.connect(self.read_output)
-            process.start(command)
+            try:
+                process = QProcess()
+                process.setProcessChannelMode(QProcess.MergedChannels)
+                process.start(command)
 
-            # Read the output in real-time
-            while process.state() == QProcess.Running:
-                QCoreApplication.processEvents()  # Allow GUI to update
-                process.waitForReadyRead()
-                self.read_output()
+                process.readyReadStandardOutput.connect(lambda: self.output_signal.emit(process.readAllStandardOutput().data().decode("utf-8")))
+                process.waitForFinished(-1)
 
-            process.waitForFinished(-1)
+                if process.exitCode() != 0:
+                    raise Exception(f"Error executing command '{command}': {process.readAllStandardOutput().data().decode('utf-8')}")
 
-        self.run_button.setText("Restart System")
-        self.run_button.clicked.disconnect(self.run_commands)
-        self.run_button.clicked.connect(self.restart_system)
-        self.run_button.setDisabled(False)  # Re-enable the button
+            except Exception as e:
+                self.output_signal.emit(f"Error executing command '{command}': {str(e)}")
 
-    def read_output(self):
-        process = self.sender()
-        output = process.readAllStandardOutput().data().decode()
-        self.output_text.append(output)
-
-        # Scroll to the bottom of the output
-        self.scrollbar.setValue(self.scrollbar.maximum())
-
-    def restart_system(self):
-        process = QProcess()
-        process.start("shutdown -r now")
-        process.waitForFinished(-1)  # Wait for the shutdown process to finish
-
-        # Exit the application
-        QApplication.quit()
+        # All commands have finished, show restart button
+        self.output_signal.emit("All commands have finished.")
+        self.finished.emit()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
