@@ -87,10 +87,6 @@ subprocess.run(["mount", "-t", "proc", "none", os.path.join(MNT, "proc")])
 subprocess.run(["mount", "-t", "sysfs", "none", os.path.join(MNT, "sys")])
 subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")])
 
-# Generate fstab
-subprocess.run(["genfstab", "-t", "PARTUUID", MNT], text=True, check=True, stdout=open(os.path.join(MNT, "etc/fstab"), "w"))
-subprocess.run(["sed", "-i", "/zroot/d", os.path.join(MNT, "etc/fstab")])
-
 # Copy files to new system
 shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
