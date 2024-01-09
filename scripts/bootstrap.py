@@ -119,6 +119,7 @@ def plasma():
     "flatpak",
     "kate",
     "kdialog",
+    "kjournald",
     "konsole",
     "git",
     'networkmanager',
