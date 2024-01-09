@@ -123,6 +123,7 @@ def plasma():
     "git",
     'networkmanager',
     'plasma-nm',
+    'plasma-systemmonitor',
     "pyqt5",
     "spectacle",
     "wget",
