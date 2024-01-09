@@ -121,6 +121,8 @@ def plasma():
     "kdialog",
     "konsole",
     "git",
+    'networkmanager',
+    'plasma-nm',
     "pyqt5",
     "spectacle",
     "wget",
