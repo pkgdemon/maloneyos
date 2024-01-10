@@ -4,11 +4,6 @@ import os
 import shutil
 import subprocess
 
-# Check for root privileges
-if os.geteuid() != 0:
-  print("Error: This script requires root privileges. Please run with 'sudo'.")
-  exit(1)
-
 # Define variables
 WORKDIR="/tmp/maloneyos"
 ISO=f"{WORKDIR}/archiso-tmp"

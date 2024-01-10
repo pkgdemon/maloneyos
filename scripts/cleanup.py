@@ -4,10 +4,6 @@ import os
 import shutil
 import sys
 
-if os.geteuid() != 0:
-    print("Error: This script requires root privileges. Please run with 'sudo'.")
-    sys.exit(1)
-
 # Define variables
 WORKDIR="/tmp/maloneyos"
 
