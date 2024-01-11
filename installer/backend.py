@@ -117,7 +117,7 @@ def install():
     subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")], check=True)
 
     # Copy files to the new system
-    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid")
+    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
     # Copy vmlinuz needed for mkinitcpio to the installed system
     shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
