@@ -39,41 +39,41 @@ def cleanup():
         if entry in existing_entry:
             # Remove the existing entries before creating a new one
             entry_number = existing_entry.split()[0].replace("Boot", "").replace("*", "")
-            subprocess.run(["efibootmgr", "-Bb", entry_number])
+            subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
 
     # Make MNT directory if it does not exist
     if not os.path.isdir(MNT):
         os.mkdir(MNT)
 
     # Unmount file systems
-    subprocess.run(["umount", f"{MNT}/dev"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["umount", f"{MNT}/proc"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["umount", f"{MNT}/sys/firmware/efi/efivars"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["umount", f"{MNT}/sys"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["umount", f"{MNT}/efi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["umount", f"{MNT}/dev"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    subprocess.run(["umount", f"{MNT}/proc"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    subprocess.run(["umount", f"{MNT}/sys/firmware/efi/efivars"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    subprocess.run(["umount", f"{MNT}/sys"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    subprocess.run(["umount", f"{MNT}/efi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
     # Export active zpools
-    subprocess.run(["zpool", "export", "-a"])
-    subprocess.run(["zpool", "labelclear", "zroot", "-f"], stderr=subprocess.DEVNULL)
+    subprocess.run(["zpool", "export", "-a"], check=True)
+    subprocess.run(["zpool", "labelclear", "zroot", "-f"], stderr=subprocess.DEVNULL, check=True)
 
     # Remove MNT directory and recreate it
-    subprocess.run(["rm", "-rf", MNT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["rm", "-rf", MNT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     os.mkdir(MNT)
 
     # Ensure disk has been erased properly with wipefs
-    subprocess.run(["wipefs", "-aq", DISK])
+    subprocess.run(["wipefs", "-aq", DISK], check=True)
 
 def filesystem():
     """
     Creates and mounts filesystems.
     """
     # Generate hostid
-    subprocess.run(["zgenhostid"])
+    subprocess.run(["zgenhostid"], check=True)
 
     # Partition the disk
-    subprocess.run(["sgdisk", "--zap-all", DISK])
-    subprocess.run(["sgdisk", "-n1:1M:+512M", "-t1:EF00", DISK])
-    subprocess.run(["sgdisk", "-n2:0:0", "-t2:BF00", DISK])
+    subprocess.run(["sgdisk", "--zap-all", DISK], check=True)
+    subprocess.run(["sgdisk", "-n1:1M:+512M", "-t1:EF00", DISK], check=True)
+    subprocess.run(["sgdisk", "-n2:0:0", "-t2:BF00", DISK], check=True)
 
     # Create zroot
     subprocess.run(["zpool", "create", "-f",
@@ -85,23 +85,23 @@ def filesystem():
                     "-O", "normalization=formD",
                     "-O", "relatime=on",
                     "-O", "xattr=sa",
-                    "-m", "none", "zroot", f"{DISK}2"])
+                    "-m", "none", "zroot", f"{DISK}2"], check=True)
 
     # Create datasets
-    subprocess.run(["zfs", "create", "-o", "mountpoint=none", "zroot/ROOT"])
-    subprocess.run(["zfs", "create", "-o", "mountpoint=/", "-o", "canmount=noauto", "zroot/ROOT/arch"])
-    subprocess.run(["zfs", "create", "-o", "mountpoint=/home", "zroot/home"])
+    subprocess.run(["zfs", "create", "-o", "mountpoint=none", "zroot/ROOT"], check=True)
+    subprocess.run(["zfs", "create", "-o", "mountpoint=/", "-o", "canmount=noauto", "zroot/ROOT/arch"], check=True)
+    subprocess.run(["zfs", "create", "-o", "mountpoint=/home", "zroot/home"], check=True)
 
     # Test the pool by importing and exporting
-    subprocess.run(["zpool", "export", "zroot"])
-    subprocess.run(["zpool", "import", "-N", "-R", MNT, "zroot"])
-    subprocess.run(["zfs", "mount", "zroot/ROOT/arch"])
-    subprocess.run(["zfs", "mount", "zroot/home"])
+    subprocess.run(["zpool", "export", "zroot"], check=True)
+    subprocess.run(["zpool", "import", "-N", "-R", MNT, "zroot"], check=True)
+    subprocess.run(["zfs", "mount", "zroot/ROOT/arch"], check=True)
+    subprocess.run(["zfs", "mount", "zroot/home"], check=True)
 
     # Create and mount the EFI partition
-    subprocess.run(["mkfs.vfat", "-F", "32", "-n", "EFI", f"{DISK}1"])
+    subprocess.run(["mkfs.vfat", "-F", "32", "-n", "EFI", f"{DISK}1"], check=True)
     os.mkdir(f"{MNT}/efi")
-    subprocess.run(["mount", f"{DISK}1", f"{MNT}/efi"])
+    subprocess.run(["mount", f"{DISK}1", f"{MNT}/efi"], check=True)
 
 def install():
     """
@@ -111,13 +111,13 @@ def install():
     subprocess.run(["unsquashfs", "-f", "-d", "/tmp/maloneyos", "/dev/loop0"])
 
     # Mounts for various OS commands to work
-    subprocess.run(["mount", "-t", "devtmpfs", "none", os.path.join(MNT, "dev")])
-    subprocess.run(["mount", "-t", "proc", "none", os.path.join(MNT, "proc")])
-    subprocess.run(["mount", "-t", "sysfs", "none", os.path.join(MNT, "sys")])
-    subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")])
+    subprocess.run(["mount", "-t", "devtmpfs", "none", os.path.join(MNT, "dev")], check=True)
+    subprocess.run(["mount", "-t", "proc", "none", os.path.join(MNT, "proc")], check=True)
+    subprocess.run(["mount", "-t", "sysfs", "none", os.path.join(MNT, "sys")], check=True)
+    subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")], check=True)
 
     # Copy files to the new system
-    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
+    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"), check=True)
 
     # Copy vmlinuz needed for mkinitcpio to the installed system
     shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
@@ -152,27 +152,27 @@ def install():
         f.write("en_US.UTF-8 UTF-8\n")
         f.write("C.UTF-8 UTF-8\n")
 
-    subprocess.run(["arch-chroot", MNT, "locale-gen"])
+    subprocess.run(["arch-chroot", MNT, "locale-gen", check=True)
 
     with open(os.path.join(MNT, "etc/timezone"), "w") as f:
         f.write("UTC\n")
 
-    subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"])
-    subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"])
+    subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"], check=True)
+    subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"], check=True)
 
 def user():
     """
     Creates the users and groups.
     """
     # Set root password
-    subprocess.run(["arch-chroot", MNT, "echo", f"root:{PASSWORD}", "|", "chpasswd"])
+    subprocess.run(["arch-chroot", MNT, "echo", f"root:{PASSWORD}", "|", "chpasswd"], check=True)
 
     # Add user and set password
-    subprocess.run(["arch-chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME])
-    subprocess.run(["arch-chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"])
+    subprocess.run(["arch-chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
+    subprocess.run(["arch-chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"], check=True)
 
     # Enable sudo for the wheel group
-    subprocess.run(["arch-chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"])
+    subprocess.run(["arch-chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
 
 
 def bootloader():
@@ -180,7 +180,7 @@ def bootloader():
     Setup and install the bootloader.
     """
     # Install systemd-boot
-    subprocess.run(["arch-chroot", MNT, "bootctl", "install"])
+    subprocess.run(["arch-chroot", MNT, "bootctl", "install"], check=True)
 
     # Configure systemd-boot for MaloneyOS
     with open(os.path.join(MNT, "boot/loader/loader.conf"), "w") as f:
@@ -201,26 +201,25 @@ def services():
     Starts services.
     """
     # Enable zfs-import-scan service
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "zfs-import-scan"])
+    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "zfs-import-scan"], check=True)
 
     # Set keyboard layout
-    subprocess.run(["arch-chroot", MNT, "localectl", "set-keymap", "--no-convert", "us"])
+    subprocess.run(["arch-chroot", MNT, "localectl", "set-keymap", "--no-convert", "us"], check=True)
 
     # Enable services
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "NetworkManager"])
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "sshd"])
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "dhcpd4"])
+    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "NetworkManager"], check=True)
+    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "sshd"], check=True)
+    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "dhcpd4"], check=True)
 
 def unmount():
     """
     Umounts filesystems for cleanup
     """
-    subprocess.run(["umount", os.path.join(MNT, "dev")])
-    subprocess.run(["umount", os.path.join(MNT, "proc")])
-    subprocess.run(["umount", os.path.join(MNT, "sys/firmware/efi/efivars")])
-    subprocess.run(["umount", os.path.join(MNT, "sys")])
-    subprocess.run(["umount", os.path.join(MNT, "efi")])
-    subprocess.run(["reboot"])
+    subprocess.run(["umount", os.path.join(MNT, "dev")], check=True)
+    subprocess.run(["umount", os.path.join(MNT, "proc")], check=True)
+    subprocess.run(["umount", os.path.join(MNT, "sys/firmware/efi/efivars")], check=True)
+    subprocess.run(["umount", os.path.join(MNT, "sys")], check=True)
+    subprocess.run(["umount", os.path.join(MNT, "efi")], check=True)
 
 cleanup()
 filesystem()
