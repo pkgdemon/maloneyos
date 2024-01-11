@@ -15,9 +15,6 @@ DISK = open("/tmp/selected-disk", encoding="utf-8").read().strip()
 USERNAME = open("/tmp/username", encoding="utf-8").read().strip()
 PASSWORD = open("/tmp/password", encoding="utf-8").read().strip()
 
-import os
-import subprocess
-
 def cleanup():
     """
     Cleans up the system by removing existing boot entries, unmounting file systems,
