@@ -108,7 +108,7 @@ def install():
     Extracts the system and makes other customizations.
     """
     # Extract the image
-    subprocess.run(["unsquashfs", "-f", "-d", "/tmp/maloneyos", "/dev/loop0"])
+    subprocess.run(["unsquashfs", "-f", "-d", "/tmp/maloneyos", "/dev/loop0"], check=True)
 
     # Mounts for various OS commands to work
     subprocess.run(["mount", "-t", "devtmpfs", "none", os.path.join(MNT, "dev")], check=True)
@@ -117,7 +117,7 @@ def install():
     subprocess.run(["mount", "-t", "efivarfs", "none", os.path.join(MNT, "sys/firmware/efi/efivars")], check=True)
 
     # Copy files to the new system
-    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"), check=True)
+    shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid")
 
     # Copy vmlinuz needed for mkinitcpio to the installed system
     shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
@@ -128,7 +128,7 @@ def install():
 
     # Generate proper preset for the installed system
     os.remove(os.path.join(MNT, "etc/mkinitcpio.conf.d/archiso.conf"))
-    with open(os.path.join(MNT, "etc/mkinitcpio.d/linux-lts.preset"), "w") as f:
+    with open(os.path.join(MNT, "etc/mkinitcpio.d/linux-lts.preset"), "w", encoding="utf-8") as f:
         f.write("# mkinitcpio preset file for the 'linux-lts' package\n\n")
         f.write("#ALL_config=\"/etc/mkinitcpio.conf\"\n")
         f.write("ALL_kver=\"/boot/vmlinuz-linux-lts\"\n")
@@ -144,17 +144,17 @@ def install():
         f.write("fallback_options=\"-S autodetect\"\n")
 
     # Hardcode the timezone to UTC
-    with open(os.path.join(MNT, "etc/locale.conf"), "w") as f:
+    with open(os.path.join(MNT, "etc/locale.conf"), "w", encoding="utf-8") as f:
         f.write("LANG=en_US.UTF-8\n")
         f.write("LC_COLLATE=C\n")
 
-    with open(os.path.join(MNT, "etc/locale.gen"), "w") as f:
+    with open(os.path.join(MNT, "etc/locale.gen"), "w", encoding="utf-8") as f:
         f.write("en_US.UTF-8 UTF-8\n")
         f.write("C.UTF-8 UTF-8\n")
 
-    subprocess.run(["arch-chroot", MNT, "locale-gen", check=True)
+    subprocess.run(["arch-chroot", MNT, "locale-gen"], check=True)
 
-    with open(os.path.join(MNT, "etc/timezone"), "w") as f:
+    with open(os.path.join(MNT, "etc/timezone"), "w", encoding="utf-8") as f:
         f.write("UTC\n")
 
     subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"], check=True)
@@ -183,12 +183,12 @@ def bootloader():
     subprocess.run(["arch-chroot", MNT, "bootctl", "install"], check=True)
 
     # Configure systemd-boot for MaloneyOS
-    with open(os.path.join(MNT, "boot/loader/loader.conf"), "w") as f:
+    with open(os.path.join(MNT, "boot/loader/loader.conf"), "w", encoding="utf-8") as f:
         f.write("default MaloneyOS.conf\n")
         f.write("timeout 0\n")
 
     # Create the systemd-boot entry
-    with open(os.path.join(MNT, "boot/loader/entries/MaloneyOS.conf"), "w") as f:
+    with open(os.path.join(MNT, "boot/loader/entries/MaloneyOS.conf"), "w", encoding="utf-8") as f:
         f.write("title MaloneyOS\n")
         f.write("linux /vmlinuz-linux-lts\n")
         f.write("initrd /amd-ucode.img\n")
