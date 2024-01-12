@@ -201,22 +201,26 @@ def bootloader():
     """
     Setup and install the bootloader.
     """
-    # Install systemd-boot
-    subprocess.run(["arch-chroot", MNT, "bootctl", "install"], check=True)
+    # Set a cachefile for ZFS
+    subprocess.run(["chroot", MNT, "zpool", "set", "cachefile=/etc/zfs/zpool.cache", "zroot"], check=True)
 
-    # Configure systemd-boot for MaloneyOS
-    with open(os.path.join(MNT, "boot/loader/loader.conf"), "w", encoding="utf-8") as f:
-        f.write("default MaloneyOS.conf\n")
-        f.write("timeout 0\n")
+    # Set the bootfs
+    subprocess.run(["chroot", MNT, "zpool", "set", f"bootfs=zroot/ROOT/arch", "zroot"], check=True)
 
-    # Create the systemd-boot entry
-    with open(os.path.join(MNT, "boot/loader/entries/MaloneyOS.conf"), "w", encoding="utf-8") as f:
-        f.write("title MaloneyOS\n")
-        f.write("linux /vmlinuz-linux-lts\n")
-        f.write("initrd /amd-ucode.img\n")
-        f.write("initrd /intel-ucode.img\n")
-        f.write("initrd /initramfs-linux-lts.img\n")
-        f.write("options zfs=zroot/ROOT/arch rw\n")
+    # Enable all needed daemons
+    subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"], check=True)
+
+    # Create EFI subfolder
+    subprocess.run(["chroot", MNT, "mkdir", "-p", "/efi/EFI/zbm"], check=True)
+
+    # Get the latest zfsbootmenu
+    subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{MNT}/efi/EFI/zbm/zfsbootmenu.EFI"], check=True)
+
+    # Add an entry to your boot menu
+    subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", f"spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"], check=True)
+
+    # Set the kernel parameters
+    subprocess.run(["chroot", MNT, "zfs", "set", f"org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid=$(hostid)", "zroot/ROOT"], check=True)
 
 def services():
     """
