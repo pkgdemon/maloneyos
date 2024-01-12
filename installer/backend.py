@@ -45,12 +45,17 @@ def cleanup():
     if not os.path.isdir(MNT):
         os.mkdir(MNT)
 
-    # Unmount file systems
-    subprocess.run(["umount", f"{MNT}/dev"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    subprocess.run(["umount", f"{MNT}/proc"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    subprocess.run(["umount", f"{MNT}/sys/firmware/efi/efivars"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    subprocess.run(["umount", f"{MNT}/sys"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    subprocess.run(["umount", f"{MNT}/efi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    # Unmount file systems if they are mounted
+    if os.path.ismount(f"{MNT}/dev"):
+        subprocess.run(["umount", f"{MNT}/dev"], check=True)
+    if os.path.ismount(f"{MNT}/proc"):
+        subprocess.run(["umount", f"{MNT}/proc"], check=True)
+    if os.path.ismount(f"{MNT}/sys/firmware/efi/efivars"):
+        subprocess.run(["umount", f"{MNT}/sys/firmware/efi/efivars"], check=True)
+    if os.path.ismount(f"{MNT}/sys"):
+        subprocess.run(["umount", f"{MNT}/sys"], check=True)
+    if os.path.ismount(f"{MNT}/efi"):
+        subprocess.run(["umount", f"{MNT}/efi"], check=True)
 
     # Export active zpools
     subprocess.run(["zpool", "export", "-a"], check=True)
