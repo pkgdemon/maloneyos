@@ -66,7 +66,8 @@ def cleanup():
         subprocess.run(["zpool", "labelclear", "zroot", "-f"], check=True)
 
     # Remove MNT directory and recreate it
-    subprocess.run(["rm", "-rf", MNT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    if os.path.exists(MNT):
+        subprocess.run(["rm", "-rf", MNT], check=True)
     os.mkdir(MNT)
 
     # Ensure disk has been erased properly with wipefs
