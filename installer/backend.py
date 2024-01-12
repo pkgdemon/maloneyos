@@ -189,7 +189,7 @@ def user():
     subprocess.run(["chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
 
     # Remove sddm.conf autologin
-    subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"])
+    subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"], check=True)
 
 
 def bootloader():
