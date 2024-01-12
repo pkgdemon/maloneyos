@@ -34,9 +34,9 @@ def lts():
         lines = f.readlines()
     f.seek(0)
     for line in lines:
-      if "linux" in line and line.strip() == "linux":
-        continue
-      f.write(line)
+        if "linux" in line and line.strip() == "linux":
+            continue
+        f.write(line)
     f.truncate()
 
   
@@ -46,7 +46,7 @@ def lts():
         f.seek(0)
         for line in lines:
             if not line.startswith(("broadcom-wl", "b43-fwcutter")):
-            f.write(line)
+                f.write(line)
         f.truncate()
 
     # Replace linux with linux-lts in syslinux bootloader for BIOS boot
