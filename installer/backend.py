@@ -130,6 +130,9 @@ def install():
     shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
 def locale():
+    '''
+    Function to set keyboard mapping, timezone related things.
+    '''
     # Hardcode the timezone and locale for now
     f.write("LANG=en_US.UTF-8\n")
     f.write("LC_COLLATE=C\n")
@@ -146,6 +149,9 @@ def locale():
     subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"], check=True)
 
 def mkinitcpio():
+    '''
+    Function to prepare for and gererate image using mkinitcpio.
+    '''
     # Copy vmlinuz needed for mkinitcpio to the installed system
     shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
 
@@ -171,10 +177,10 @@ def mkinitcpio():
         f.write("fallback_options=\"-S autodetect\"\n")
 
     # Configure mkinitcpio
-    subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/etc/mkinitcpio.conf"])
+    subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/etc/mkinitcpio.conf"], check=True)
 
     # Run mkinitcpio
-    subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"])
+    subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"], check=True)
 
 def user():
     """
