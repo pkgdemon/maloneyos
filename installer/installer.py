@@ -123,7 +123,7 @@ class MaloneyOSInstaller(QWidget):
         '''
         If we have no disk selected prevent next from being pressed.
         '''
-        self.DISK = disk
+        self.disk = disk
         self.next_button_disk.setEnabled(True)
 
     def show_user_creation(self):
@@ -155,8 +155,8 @@ class MaloneyOSInstaller(QWidget):
         '''
         Save credentials to be read by the backend to create users, add user to group, sudoers, etc.
         '''
-        username_value = self.USERNAME
-        password_value = self.PASSWORD
+        username_value = self.username
+        password_value = self.password
         with open('/tmp/username', 'w', encoding='utf-8') as username_file:
             username_file.write(username_value)
         with open('/tmp/password', 'w', encoding='utf-8') as password_file:
@@ -166,8 +166,8 @@ class MaloneyOSInstaller(QWidget):
         '''
         Output information collected during the wizard for the backend.
         '''
-        self.USERNAME = self.username_input.text()
-        self.PASSWORD = self.password_input.text()
+        self.username = self.username_input.text()
+        self.password = self.password_input.text()
         self.stacked_widget.setCurrentIndex(3)
         self.output_disk_value()
         self.output_credentials()
