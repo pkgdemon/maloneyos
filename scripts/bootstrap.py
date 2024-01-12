@@ -196,7 +196,7 @@ def user():
         f.seek(0)
         f.write(content)
         f.truncate()
-  
+
     # Add archie to sudoers
     os.makedirs(sudoers_dir, exist_ok=True)
     with open(os.path.join(sudoers_dir, "00_archie"), "w", encoding="utf-8") as f:
@@ -208,7 +208,7 @@ def installer():
     '''
     # Clone the repository to ISO/maloneyOS
     subprocess.run(["git", "clone", "https://github.com/pkgdemon/maloneyos.git", f"{RELENG}/airootfs/maloneyos"], check=True)
-  
+
 def desktop_shortcut():
     '''
     Create desktop shortcut for the live system user.
