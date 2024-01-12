@@ -221,6 +221,12 @@ def unmount():
     subprocess.run(["umount", os.path.join(MNT, "sys")], check=True)
     subprocess.run(["umount", os.path.join(MNT, "efi")], check=True)
 
+def export_pools():
+    """
+    Here we export all pools so system will boot cleanly.
+    """
+    subprocess.run(["zpool", "export", "-a"], check=True)
+
 cleanup()
 filesystem()
 install()
@@ -228,5 +234,6 @@ user()
 bootloader()
 services()
 unmount()
+export_pools()
 
 # End-of-file (EOF)
