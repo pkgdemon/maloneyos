@@ -21,9 +21,9 @@ def config():
     # Copy the releng configuration
     shutil.copytree('/usr/share/archiso/configs/releng/', RELENG, symlinks=True)
 
-def lts():
+def replace_kernel_in_packages():
     '''
-    Function to add OpenZFS package and repo.
+    Function to modify package list to replace rolling kernel with linux-lts kernel.
     '''
     # Add linux-lts to packages.x86_64
     with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
@@ -48,6 +48,10 @@ def lts():
                 f.write(line)
         f.truncate()
 
+def replace_kernel_in_bootloader():
+    '''
+    Replace linux with linux-lts in syslinux, efiboot, and grub.
+    '''
     # Replace linux with linux-lts in syslinux bootloader for BIOS boot
     syslinux_cfg_path = os.path.join(RELENG, "syslinux", "archiso_sys-linux.cfg")
     with open(syslinux_cfg_path, "r+", encoding="utf-8") as f:
@@ -220,7 +224,8 @@ def desktop_shortcut():
     subprocess.run(["chmod", "+x", installer_desktop], check=True)
 
 config()
-lts()
+replace_kernel_in_packages()
+replace_kernel_in_bootloader
 zfs()
 plasma()
 sddm()
