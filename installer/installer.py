@@ -147,7 +147,7 @@ class MaloneyOSInstaller(QWidget):
         '''
         Construct disk output as /dev/$DEVICE to be used by backend.
         '''
-        disk_value = "/dev/" + self.DISK
+        disk_value = "/dev/" + self.disk
         with open('/tmp/selected-disk', 'w', encoding='utf-8') as file:
             file.write(disk_value)
 
