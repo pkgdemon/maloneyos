@@ -40,15 +40,6 @@ def lts():
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
-    with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
-        lines = f.readlines()
-    f.seek(0)
-    for line in lines:
-        if "linux" in line and line.strip() == "linux":
-            continue
-        f.write(line)
-    f.truncate()
-
     # Remove packages that pull in linux from packages.x86_64
     with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
         lines = f.readlines()
