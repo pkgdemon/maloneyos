@@ -6,6 +6,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushBut
 from PyQt5.QtCore import QThread, pyqtSignal, QProcess
 
 class MaloneyOSInstaller(QWidget):
+    '''
+    Define the QStackedWidget class so we can navigate through several screens collecting info and then install.
+    '''
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MaloneyOS Installer")
@@ -13,6 +16,9 @@ class MaloneyOSInstaller(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        '''
+        Define our pages that we will use in the installer, welcome, disk, user, install, etc.
+        '''
         # Welcome Page
         welcome_page = QWidget()
         welcome_layout = QVBoxLayout()
@@ -108,16 +114,28 @@ class MaloneyOSInstaller(QWidget):
         self.commands_executed = False  # Flag to track if commands have been executed
 
     def show_disk_selection(self):
+        '''
+        Function to show disk selection.
+        '''
         self.stacked_widget.setCurrentIndex(1)
 
     def select_disk(self, disk):
+        '''
+        If we have no disk selected prevent next from being pressed.
+        '''
         self.DISK = disk
         self.next_button_disk.setEnabled(True)
 
     def show_user_creation(self):
+        '''
+        Display the user creation window
+        '''
         self.stacked_widget.setCurrentIndex(2)
 
     def validate_password(self):
+        '''
+        Confirm the password matches and prevent next from being pressed if it does not.
+        '''
         password = self.password_input.text()
         confirm_password = self.confirm_password_input.text()
         if password == confirm_password and password != "":
@@ -126,19 +144,28 @@ class MaloneyOSInstaller(QWidget):
             self.next_button_user.setEnabled(False)
 
     def output_disk_value(self):
+        '''
+        Construct disk output as /dev/$DEVICE to be used by backend.
+        '''
         disk_value = "/dev/" + self.DISK
-        with open('/tmp/selected-disk', 'w') as file:
+        with open('/tmp/selected-disk', 'w', encoding='utf-8') as file:
             file.write(disk_value)
 
     def output_credentials(self):
+        '''
+        Save credentials to be read by the backend to create users, add user to group, sudoers, etc.
+        '''
         username_value = self.USERNAME
         password_value = self.PASSWORD
-        with open('/tmp/username', 'w') as username_file:
+        with open('/tmp/username', 'w', encoding='utf-8') as username_file:
             username_file.write(username_value)
-        with open('/tmp/password', 'w') as password_file:
+        with open('/tmp/password', 'w', encoding='utf-8') as password_file:
             password_file.write(password_value)
 
     def show_installation(self):
+        '''
+        Output information collected during the wizard for the backend.
+        '''
         self.USERNAME = self.username_input.text()
         self.PASSWORD = self.password_input.text()
         self.stacked_widget.setCurrentIndex(3)
@@ -146,15 +173,24 @@ class MaloneyOSInstaller(QWidget):
         self.output_credentials()
 
     def run_commands(self):
+        '''
+        Hide the restart button until commands finish running.
+        '''
         if not self.commands_executed:
             self.install_restart_button.setDisabled(True)
             self.worker_thread.start()
             self.commands_executed = True
 
     def read_output(self, output):
+        '''
+        Allow the output to be read.
+        '''
         self.output_text.append(output)
 
     def show_restart_button(self):
+        '''
+        Change button to restart system when commands finish.
+        '''
         self.install_restart_button.setEnabled(True)
         self.install_restart_button.hide()
         self.restart_system_button.show()
@@ -162,6 +198,9 @@ class MaloneyOSInstaller(QWidget):
         self.stacked_widget.setCurrentIndex(3)
 
     def restart_system(self):
+        '''
+        Allow restarting the system and raise and exception if we cannot.
+        '''
         try:
             process = QProcess()
             process.startDetached("shutdown", ["-r", "now"])
@@ -169,9 +208,15 @@ class MaloneyOSInstaller(QWidget):
             self.output_text.append(f"Error restarting system: {str(e)}")
 
 class WorkerThread(QThread):
+    '''
+    Create a worker thread so we can display output real time.
+    '''
     output_signal = pyqtSignal(str)
 
     def run(self):
+        '''
+        Run the backend with the informatoin we collected with the wizard to install the system.
+        '''
         commands = [
             "python3 backend.py"
         ]
