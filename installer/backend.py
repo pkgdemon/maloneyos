@@ -59,7 +59,11 @@ def cleanup():
 
     # Export active zpools
     subprocess.run(["zpool", "export", "-a"], check=True)
-    subprocess.run(["zpool", "labelclear", "zroot", "-f"], stderr=subprocess.DEVNULL, check=True)
+    
+    # Check if zroot pool exists
+    existing_pools = subprocess.check_output(["zpool", "list", "-H", "-o", "name"]).decode().splitlines()
+    if "zroot" in existing_pools:
+        subprocess.run(["zpool", "labelclear", "zroot", "-f"], stderr=subprocess.DEVNULL, check=True)
 
     # Remove MNT directory and recreate it
     subprocess.run(["rm", "-rf", MNT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
