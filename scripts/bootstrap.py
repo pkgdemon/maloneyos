@@ -30,6 +30,16 @@ def lts():
         f.write("linux-lts\n")
 
     # Remove line with the exact match of "linux" from packages.x86_64
+    file_path = os.path.join(RELENG, "packages.x86_64")
+    # Read the file content into a list
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    # Manipulate the list
+    new_lines = [line for line in lines if "linux" not in line.strip()]
+    # Write the updated list back to the file
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
     with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
         lines = f.readlines()
     f.seek(0)
