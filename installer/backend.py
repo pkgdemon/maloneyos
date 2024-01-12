@@ -78,7 +78,7 @@ def filesystem():
     Creates and mounts filesystems.
     """
     # Generate hostid
-    subprocess.run(["zgenhostid"], check=True)
+    subprocess.run(["zgenhostid", "-f"], check=True)
 
     # Partition the disk
     subprocess.run(["sgdisk", "--zap-all", DISK], check=True)
