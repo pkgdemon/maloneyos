@@ -69,6 +69,7 @@ def lts():
         f.truncate()
 
     # Replace linux with linux-lts in grub bootloader for UEFI boot
+    grub_cfg_path = os.path.join(RELENG, "syslinux", "archiso_sys-linux.cfg")
     with open(grub_cfg_path, "r+", encoding="utf-8") as f:
         mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
         new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
@@ -77,9 +78,9 @@ def lts():
         content = f.read()
         content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
         content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
-        f.seek(0)
-        f.write(content)
-        f.truncate()
+    f.seek(0)
+    f.write(content)
+    f.truncate()
 
     # Linux LTS doesn't support swapfiles option
     systemd_mount_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "etc-pacman.d-gnupg.mount")
