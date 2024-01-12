@@ -133,18 +133,12 @@ def locale():
     '''
     Function to set keyboard mapping, timezone related things.
     '''
-    # Hardcode the timezone and locale for now
-    with open(os.path.join(MNT, "etc/locale.gen"), "w", encoding="utf-8") as f:
-        f.write("en_US.UTF-8 UTF-8\n")
-        f.write("C.UTF-8 UTF-8\n")
-
-    subprocess.run(["arch-chroot", MNT, "locale-gen"], check=True)
-
-    with open(os.path.join(MNT, "etc/timezone"), "w", encoding="utf-8") as f:
-        f.write("UTC\n")
-
-    subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"], check=True)
-    subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"], check=True)
+    subprocess.run(["chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/America/New_York", "/etc/localtime"], check=True)
+    subprocess.run(["chroot", MNT, "hwclock", "--systohc"], check=True)
+    subprocess.run(["chroot", MNT, "echo", "en_US.UTF-8 UTF-8", ">>", "/etc/locale.gen"], check=True)
+    subprocess.run(["chroot", MNT, "locale-gen"], check=True)
+    subprocess.run(["chroot", MNT, "echo", "LANG=en_US.UTF-8", ">", "/etc/locale.conf"], check=True)
+    subprocess.run(["chroot", MNT, "echo", "KEYMAP=de_CH-latin1", ">", "/etc/vconsole.conf"], check=True)
 
 def mkinitcpio():
     '''
@@ -185,14 +179,17 @@ def user():
     Creates the users and groups.
     """
     # Set root password
-    subprocess.run(["arch-chroot", MNT, "echo", f"root:{PASSWORD}", "|", "chpasswd"], check=True)
+    subprocess.run(["chroot", MNT, "echo", f"root:{PASSWORD}", "|", "chpasswd"], check=True)
 
     # Add user and set password
-    subprocess.run(["arch-chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
-    subprocess.run(["arch-chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"], check=True)
+    subprocess.run(["chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
+    subprocess.run(["chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"], check=True)
 
     # Enable sudo for the wheel group
-    subprocess.run(["arch-chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
+    subprocess.run(["chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
+
+    # Remove sddm.conf autologin
+    subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"])
 
 
 def bootloader():
@@ -224,16 +221,8 @@ def services():
     """
     Starts services.
     """
-    # Enable zfs-import-scan service
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "zfs-import-scan"], check=True)
-
-    # Set keyboard layout
-    subprocess.run(["arch-chroot", MNT, "localectl", "set-keymap", "--no-convert", "us"], check=True)
-
-    # Enable services
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "NetworkManager"], check=True)
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "sshd"], check=True)
-    subprocess.run(["arch-chroot", MNT, "systemctl", "enable", "dhcpd4"], check=True)
+    # Enable zfs services
+    subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"]check=True)
 
 def unmount():
     """
