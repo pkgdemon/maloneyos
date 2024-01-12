@@ -129,6 +129,23 @@ def install():
     # Copy files to the new system
     shutil.copy2("/etc/hostid", os.path.join(MNT, "etc/hostid"))
 
+def locale():
+    # Hardcode the timezone and locale for now
+    f.write("LANG=en_US.UTF-8\n")
+    f.write("LC_COLLATE=C\n")
+    with open(os.path.join(MNT, "etc/locale.gen"), "w", encoding="utf-8") as f:
+        f.write("en_US.UTF-8 UTF-8\n")
+        f.write("C.UTF-8 UTF-8\n")
+
+    subprocess.run(["arch-chroot", MNT, "locale-gen"], check=True)
+
+    with open(os.path.join(MNT, "etc/timezone"), "w", encoding="utf-8") as f:
+        f.write("UTC\n")
+
+    subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"], check=True)
+    subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"], check=True)
+
+def mkinitcpio():
     # Copy vmlinuz needed for mkinitcpio to the installed system
     shutil.copy2("/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux-lts", os.path.join(MNT, "boot/"))
 
@@ -153,22 +170,11 @@ def install():
         f.write("#fallback_uki=\"/efi/EFI/Linux/arch-linux-lts-fallback.efi\"\n")
         f.write("fallback_options=\"-S autodetect\"\n")
 
-    # Hardcode the timezone to UTC
-    with open(os.path.join(MNT, "etc/locale.conf"), "w", encoding="utf-8") as f:
-        f.write("LANG=en_US.UTF-8\n")
-        f.write("LC_COLLATE=C\n")
+    # Configure mkinitcpio
+    subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/etc/mkinitcpio.conf"])
 
-    with open(os.path.join(MNT, "etc/locale.gen"), "w", encoding="utf-8") as f:
-        f.write("en_US.UTF-8 UTF-8\n")
-        f.write("C.UTF-8 UTF-8\n")
-
-    subprocess.run(["arch-chroot", MNT, "locale-gen"], check=True)
-
-    with open(os.path.join(MNT, "etc/timezone"), "w", encoding="utf-8") as f:
-        f.write("UTC\n")
-
-    subprocess.run(["arch-chroot", MNT, "ln", "-sf", "/usr/share/zoneinfo/UTC", "/etc/localtime"], check=True)
-    subprocess.run(["arch-chroot", MNT, "hwclock", "--systohc", "--utc"], check=True)
+    # Run mkinitcpio
+    subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"])
 
 def user():
     """
@@ -240,6 +246,8 @@ def export_pools():
 cleanup()
 filesystem()
 install()
+locale()
+mkinitcpio()
 user()
 bootloader()
 services()
