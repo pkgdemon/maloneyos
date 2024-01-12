@@ -134,8 +134,6 @@ def locale():
     Function to set keyboard mapping, timezone related things.
     '''
     # Hardcode the timezone and locale for now
-    f.write("LANG=en_US.UTF-8\n")
-    f.write("LC_COLLATE=C\n")
     with open(os.path.join(MNT, "etc/locale.gen"), "w", encoding="utf-8") as f:
         f.write("en_US.UTF-8 UTF-8\n")
         f.write("C.UTF-8 UTF-8\n")
