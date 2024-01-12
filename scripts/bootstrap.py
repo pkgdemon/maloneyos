@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 '''
-Script to customize and make all prepartions before building.
+Script to customize and make all preparations before building.
 '''
 import os
 import shutil
 import subprocess
 
 # Define variables
-WORKDIR="/tmp/maloneyos"
-ISO=f"{WORKDIR}/archiso-tmp"
-RELENG=f"{WORKDIR}/archlive"
+WORKDIR = "/tmp/maloneyos"
+ISO = f"{WORKDIR}/archiso-tmp"
+RELENG = f"{WORKDIR}/archlive"
 
 # Set the kernel version to be used in functions
 KERNEL = "linux-lts"
@@ -32,12 +32,12 @@ def lts():
     # Remove line with the exact match of "linux" from packages.x86_64
     with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
         lines = f.readlines()
-    f.seek(0)
-    for line in lines:
-        if "linux" in line and line.strip() == "linux":
-            continue
-        f.write(line)
-    f.truncate()
+        f.seek(0)
+        for line in lines:
+            if "linux" in line and line.strip() == "linux":
+                continue
+            f.write(line)
+        f.truncate()
 
     # Remove packages that pull in linux from packages.x86_64
     with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
@@ -74,13 +74,13 @@ def lts():
         mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
         new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
         os.rename(mkinitcpio_preset_path, new_preset_path)
-    with open(new_preset_path, "r+", encoding="utf-8") as f:
-        content = f.read()
-        content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
-        content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
-    f.seek(0)
-    f.write(content)
-    f.truncate()
+        with open(new_preset_path, "r+", encoding="utf-8") as nf:
+            content = nf.read()
+            content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
+            content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
+        nf.seek(0)
+        nf.write(content)
+        nf.truncate()
 
     # Linux LTS doesn't support swapfiles option
     systemd_mount_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "etc-pacman.d-gnupg.mount")
@@ -93,7 +93,7 @@ def lts():
 
 def zfs():
     '''
-    Add package and setup repo for OpenZFS.
+    Add package and set up repo for OpenZFS.
     '''
     # Add zfs-linux to packages.x86_64
     with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
@@ -107,31 +107,30 @@ def zfs():
         f.write("SigLevel = Never\n")
 
 def plasma():
-    # Add plasma packages to packages.x86_64
     '''
     Add plasma and various related packages.
     '''
     packages = [
-      "plasma-desktop",
-      "plasma-wayland-session",
-      "ark",
-      "discover",
-      "dolphin",
-      "flatpak",
-      "kate",
-      "kdialog",
-      "kjournald",
-      "konsole",
-      "kwallet5",
-      "kwalletmanager",
-      "kwallet-pam",
-      "git",
-      'networkmanager',
-      'plasma-nm',
-      'plasma-systemmonitor',
-      "pyqt5",
-      "spectacle",
-      "wget",
+        "plasma-desktop",
+        "plasma-wayland-session",
+        "ark",
+        "discover",
+        "dolphin",
+        "flatpak",
+        "kate",
+        "kdialog",
+        "kjournald",
+        "konsole",
+        "kwallet5",
+        "kwalletmanager",
+        "kwallet-pam",
+        "git",
+        'networkmanager',
+        'plasma-nm',
+        'plasma-systemmonitor',
+        "pyqt5",
+        "spectacle",
+        "wget",
     ]
     with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
         for package in packages:
@@ -211,7 +210,7 @@ def installer():
 
 def desktop_shortcut():
     '''
-    Create desktop shortcut for the live system user.
+    Create a desktop shortcut for the live system user.
     '''
     desktop_folder = os.path.join(RELENG, "airootfs", "home", "archie", "Desktop")
     installer_desktop = os.path.join(RELENG, "airootfs", "maloneyos", "installer", "installer.desktop")
