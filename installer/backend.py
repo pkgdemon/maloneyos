@@ -222,7 +222,7 @@ def services():
     Starts services.
     """
     # Enable zfs services
-    subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"]check=True)
+    subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"], check=True)
 
 def unmount():
     """
