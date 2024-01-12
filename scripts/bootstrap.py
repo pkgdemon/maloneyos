@@ -40,7 +40,7 @@ def lts():
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
-    # Remove packages that pull in linux from packages.x86_64
+    # Remove linux from packages.x86_64
     file_path = os.path.join(RELENG, "packages.x86_64")
     # Read the file content into a list
     with open(file_path, "r", encoding="utf-8") as f:
@@ -51,10 +51,18 @@ def lts():
             if "linux" in line and line.strip() == "linux":
                 continue
             f.write(line)
-    for line in lines:
-        if not line.startswith(("broadcom-wl", "b43-fwcutter")):
+
+    # Also remove packages that pull in linux from packages.x86_64
+    file_path = os.path.join(RELENG, "packages.x86_64")
+    # Read the file content into a list
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    # Open the file again for writing
+    with open(file_path, "w", encoding="utf-8") as f:
+        for line in lines:
+            if not line.startswith(("broadcom-wl", "b43-fwcutter")):
+                continue
             f.write(line)
-    f.truncate()
 
     # Replace linux with linux-lts in syslinux bootloader for BIOS boot
     syslinux_cfg_path = os.path.join(RELENG, "syslinux", "archiso_sys-linux.cfg")
