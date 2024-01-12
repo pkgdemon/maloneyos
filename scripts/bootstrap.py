@@ -73,19 +73,35 @@ def replace_kernel_in_bootloader():
         f.truncate()
 
     # Replace linux with linux-lts in grub bootloader for UEFI boot
-    grub_cfg_path = os.path.join(RELENG, "syslinux", "archiso_sys-linux.cfg")
+    grub_cfg_path = os.path.join(RELENG, "grub", "grub.cfg")
     with open(grub_cfg_path, "r+", encoding="utf-8") as f:
-        mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
-        new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
-        os.rename(mkinitcpio_preset_path, new_preset_path)
-        with open(new_preset_path, "r+", encoding="utf-8") as nf:
-            content = nf.read()
-            content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
-            content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
-        nf.seek(0)
-        nf.write(content)
-        nf.truncate()
+        content = f.read()
+        content = content.replace("vmlinuz-linux", "vmlinuz-linux-lts")
+        content = content.replace("initramfs-linux.img", "initramfs-linux-lts.img")
+        f.seek(0)
+        f.write(content)
+        f.truncate()
 
+def replace_kernel_in_mkinitcpio():
+    '''
+    Ensure we only build image for lts-kernel so we don't pull in linux as well.
+    '''
+    # Replace linux preset with linux-lts mkinitcpio preset
+    mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
+    new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
+    os.rename(mkinitcpio_preset_path, new_preset_path)
+    with open(new_preset_path, "r+", encoding="utf-8") as f:
+        content = f.read()
+        content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
+        content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
+        f.seek(0)
+        f.write(content)
+        f.truncate()
+
+def disable_swap_in_gnupg_mount():
+    '''
+    When using LTS kernel the swap option causes systemd services to error on livecd.  This corrects for now.
+    '''
     # Linux LTS doesn't support swapfiles option
     systemd_mount_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "etc-pacman.d-gnupg.mount")
     with open(systemd_mount_path, "r+", encoding="utf8") as f:
@@ -225,7 +241,9 @@ def desktop_shortcut():
 
 config()
 replace_kernel_in_packages()
-replace_kernel_in_bootloader
+replace_kernel_in_bootloader()
+replace_kernel_in_mkinitcpio()
+disable_swap_in_gnupg_mount()
 zfs()
 plasma()
 sddm()
