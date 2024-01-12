@@ -199,3 +199,5 @@ if __name__ == "__main__":
     maloney_os_installer = MaloneyOSInstaller()
     maloney_os_installer.show()
     sys.exit(app.exec_())
+
+# End-of-file (EOF)

@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import sys
 
 # Define variables
 WORKDIR="/tmp/maloneyos"
@@ -10,3 +9,5 @@ WORKDIR="/tmp/maloneyos"
 # Remove the working directory if it exists
 if os.path.isdir(WORKDIR):
     shutil.rmtree(WORKDIR)
+
+# End-of-file (EOF)

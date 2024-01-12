@@ -10,3 +10,5 @@ RELENG=f"{WORKDIR}/archlive"
 
 # Build the image
 subprocess.run(["mkarchiso", "-v", "-w", ISO, "-o", WORKDIR, RELENG])
+
+# End-of-file (EOF)

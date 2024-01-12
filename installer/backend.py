@@ -228,4 +228,5 @@ user()
 bootloader()
 services()
 unmount()
-# Installation Complete
+
+# End-of-file (EOF)

@@ -210,3 +210,5 @@ sddm()
 user()
 installer()
 desktop_shortcut()
+
+# End-of-file (EOF)
