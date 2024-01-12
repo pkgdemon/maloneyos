@@ -41,9 +41,15 @@ def lts():
         f.writelines(new_lines)
 
     # Remove packages that pull in linux from packages.x86_64
-    with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
+    file_path = os.path.join(RELENG, "packages.x86_64")
+    with open(file_path, "r+", encoding="utf-8") as f:
         lines = f.readlines()
     f.seek(0)
+    for line in lines:
+        if "linux" in line and line.strip() == "linux":
+            continue
+        f.write(line)
+    f.truncate()
     for line in lines:
         if not line.startswith(("broadcom-wl", "b43-fwcutter")):
             f.write(line)
