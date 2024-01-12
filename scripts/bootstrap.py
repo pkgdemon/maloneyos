@@ -60,7 +60,7 @@ def lts():
 
     # Replace linux with linux-lts in efiboot bootloader for UEFI boot
     efiboot_cfg_path = os.path.join(RELENG, "efiboot", "loader", "entries", "01-archiso-x86_64-linux.conf")
-    with open(efiboot_cfg_path, "r+") as f:
+    with open(efiboot_cfg_path, "r+", encoding="utf-8") as f:
         content = f.read()
         content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
         content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
@@ -69,20 +69,11 @@ def lts():
         f.truncate()
 
     # Replace linux with linux-lts in grub bootloader for UEFI boot
-    grub_cfg_path = os.path.join(RELENG, "grub", "grub.cfg")
-    with open(grub_cfg_path, "r+") as f:
-        content = f.read()
-        content = content.replace("vmlinuz-linux", "vmlinuz-linux-lts")
-        content = content.replace("initramfs-linux.img", "initramfs-linux-lts.img")
-        f.seek(0)
-        f.write(content)
-        f.truncate()
-
-    # Replace linux preset with linux-lts mkinitcpio preset
-    mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
-    new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
-    os.rename(mkinitcpio_preset_path, new_preset_path)
-    with open(new_preset_path, "r+") as f:
+    with open(grub_cfg_path, "r+", encoding="utf-8") as f:
+        mkinitcpio_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", "linux.preset")
+        new_preset_path = os.path.join(RELENG, "airootfs", "etc", "mkinitcpio.d", f"{KERNEL}.preset")
+        os.rename(mkinitcpio_preset_path, new_preset_path)
+    with open(new_preset_path, "r+", encoding="utf-8") as f:
         content = f.read()
         content = content.replace("vmlinuz-linux", f"vmlinuz-{KERNEL}")
         content = content.replace("initramfs-linux.img", f"initramfs-{KERNEL}.img")
@@ -92,7 +83,7 @@ def lts():
 
     # Linux LTS doesn't support swapfiles option
     systemd_mount_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "etc-pacman.d-gnupg.mount")
-    with open(systemd_mount_path, "r+") as f:
+    with open(systemd_mount_path, "r+", encoding="utf8") as f:
         content = f.read()
         content = content.replace(",noswap", "")
         f.seek(0)
@@ -104,13 +95,13 @@ def zfs():
     Add package and setup repo for OpenZFS.
     '''
     # Add zfs-linux to packages.x86_64
-    with open(os.path.join(RELENG, "packages.x86_64"), "a") as f:
+    with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
         f.write("zfs-dkms\n")
         f.write(f"{KERNEL}-headers\n")
 
     # Add archzfs repository to pacman.conf
     pacman_conf_path = os.path.join(RELENG, "pacman.conf")
-    with open(pacman_conf_path, "a") as f:
+    with open(pacman_conf_path, "a", encoding="utf-8") as f:
         f.write("\n[archzfs]\nServer = https://zxcvfdsa.com/archzfs/$repo/x86_64\n")
         f.write("SigLevel = Never\n")
 
@@ -153,7 +144,7 @@ def sddm():
     sddm_conf_path = os.path.join(RELENG, "airootfs", "etc", "sddm.conf.d", "autologin.conf")
 
     # Add sddm to packages.x86_64
-    with open(os.path.join(RELENG, "packages.x86_64"), "a") as f:
+    with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
         f.write("sddm\n")
 
     # Add sddm to display-manager.service
@@ -162,7 +153,7 @@ def sddm():
 
     # Add autologin to sddm.conf
     os.makedirs(os.path.dirname(sddm_conf_path), exist_ok=True)
-    with open(sddm_conf_path, "w") as f:
+    with open(sddm_conf_path, "w", encoding="utf-8") as f:
         f.write("[Autologin]\n")
         f.write("User=archie\n")
         f.write("Session=plasma\n")
@@ -179,26 +170,26 @@ def user():
     sudoers_dir = os.path.join(RELENG, "airootfs", "etc", "sudoers.d")
 
     # Add user to airootfs
-    with open(passwd_file, "a") as f:
+    with open(passwd_file, "a", encoding="utf-8") as f:
         f.write("archie:x:1000:1000::/home/archie:/usr/bin/zsh\n")
-    with open(shadow_file, "a") as f:
+    with open(shadow_file, "a", encoding="utf-8") as f:
         f.write("archie:$6$veQypn8kEQiN8Qjm$SrUpS4dGB7LUmSImYV8y1jJPRug2mJ8TghJCoHGgfXTrMBViRmEV0yaCFcgruX9.CI9gMNRK99SqrtNlmyU3G.:14871::::::\n")
-    with open(group_file, "a") as f:
+    with open(group_file, "a", encoding="utf-8") as f:
         f.write("root:x:0:root\n")
         f.write("adm:x:4:archie\n")
         f.write("wheel:x:10:archie\n")
         f.write("uucp:x:14:archie\n")
         f.write("archie:x:1000:\n")
-    with open(gshadow_file, "a") as f:
+    with open(gshadow_file, "a", encoding="utf-8") as f:
         f.write("root:!*::root\n")
         f.write("archie:!*::\n")
-    with open(os.path.join(RELENG, "profiledef.sh"), "r+") as f:
+    with open(os.path.join(RELENG, "profiledef.sh"), "r+", encoding="utf-8") as f:
         content = f.read()
         content = content.replace("shadow.*=.*0:0:400", '[\"/etc/gshadow\"]=\"0:0:0400\"')
         f.seek(0)
         f.write(content)
         f.truncate()
-    with open(os.path.join(RELENG, "profiledef.sh"), "r+") as f:
+    with open(os.path.join(RELENG, "profiledef.sh"), "r+", encoding="utf-8") as f:
         content = f.read()
         content = content.replace('["/usr/local/bin/livecd-sound"]="0:0:755"', '["/usr/local/bin/livecd-sound"]="0:0:755"\n  ["/home/archie/Desktop/installer.desktop"]="0:0:755"')
         f.seek(0)
