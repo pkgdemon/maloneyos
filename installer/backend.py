@@ -191,7 +191,6 @@ def user():
     # Remove sddm.conf autologin
     subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"], check=True)
 
-
 def bootloader():
     """
     Setup and install the bootloader.
