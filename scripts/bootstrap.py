@@ -30,39 +30,24 @@ def lts():
         f.write("linux-lts\n")
 
     # Remove line with the exact match of "linux" from packages.x86_64
-    file_path = os.path.join(RELENG, "packages.x86_64")
-    # Read the file content into a list
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(os.path.join(RELENG, "packages.x86_64"), "r+") as f:
         lines = f.readlines()
-    # Manipulate the list
-    new_lines = [line for line in lines if "linux" not in line.strip()]
-    # Write the updated list back to the file
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.writelines(new_lines)
+    f.seek(0)
+    for line in lines:
+      if "linux" in line and line.strip() == "linux":
+        continue
+      f.write(line)
+    f.truncate()
 
-    # Remove linux from packages.x86_64
-    file_path = os.path.join(RELENG, "packages.x86_64")
-    # Read the file content into a list
-    with open(file_path, "r", encoding="utf-8") as f:
+  
+   # Remove packages that pull in linux from packages.x86_64
+    with open(os.path.join(RELENG, "packages.x86_64"), "r+") as f:
         lines = f.readlines()
-    # Open the file again for writing
-    with open(file_path, "w", encoding="utf-8") as f:
-        for line in lines:
-            if "linux" in line and line.strip() == "linux":
-                continue
-            f.write(line)
-
-    # Also remove packages that pull in linux from packages.x86_64
-    file_path = os.path.join(RELENG, "packages.x86_64")
-    # Read the file content into a list
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-    # Open the file again for writing
-    with open(file_path, "w", encoding="utf-8") as f:
+        f.seek(0)
         for line in lines:
             if not line.startswith(("broadcom-wl", "b43-fwcutter")):
-                continue
             f.write(line)
+        f.truncate()
 
     # Replace linux with linux-lts in syslinux bootloader for BIOS boot
     syslinux_cfg_path = os.path.join(RELENG, "syslinux", "archiso_sys-linux.cfg")
