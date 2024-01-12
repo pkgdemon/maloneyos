@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-        
-import os
+'''
+Script to build the after customizations.
+'''
 import subprocess
 
 # Define variables
@@ -9,6 +10,6 @@ ISO=f"{WORKDIR}/archiso-tmp"
 RELENG=f"{WORKDIR}/archlive"
 
 # Build the image
-subprocess.run(["mkarchiso", "-v", "-w", ISO, "-o", WORKDIR, RELENG])
+subprocess.run(["mkarchiso", "-v", "-w", ISO, "-o", WORKDIR, RELENG], check=True)
 
 # End-of-file (EOF)
