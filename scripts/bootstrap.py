@@ -151,6 +151,7 @@ def plasma():
         'networkmanager',
         'plasma-nm',
         'plasma-systemmonitor',
+        'python-psutil',
         "pyqt5",
         "spectacle",
         "wget",
