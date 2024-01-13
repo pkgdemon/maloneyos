@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import functools
 import sys
 import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QStackedWidget, QLineEdit, QTextEdit
@@ -10,6 +11,7 @@ class MaloneyOSInstaller(QWidget):
     Define the QStackedWidget class so we can navigate through several screens collecting info and then install.
     '''
     def __init__(self):
+        self.disk = None
         super().__init__()
         self.setWindowTitle("MaloneyOS Installer")
         self.stacked_widget = QStackedWidget(self)
@@ -46,8 +48,12 @@ class MaloneyOSInstaller(QWidget):
                     disk_button.clicked.connect(lambda _, disk=disk: self.select_disk(disk))
                     disk_selection_layout.addWidget(disk_button)
 
-        except Exception as e:
-            # Handle the exception (display an error message, log the error, etc.)
+        except subprocess.CalledProcessError as e:
+            # Handle the specific exception for subprocess.CalledProcessError
+            print(f"Error getting disk information: {str(e)}")
+
+        except OSError as e:
+            # Handle the specific exception for OSError
             print(f"Error getting disk information: {str(e)}")
 
         next_button = QPushButton("Next")
@@ -123,7 +129,6 @@ class MaloneyOSInstaller(QWidget):
         '''
         If we have no disk selected prevent next from being pressed.
         '''
-        self.disk = disk
         self.next_button_disk.setEnabled(True)
 
     def show_user_creation(self):
@@ -227,13 +232,16 @@ class WorkerThread(QThread):
                 process.setProcessChannelMode(QProcess.MergedChannels)
                 process.start(command)
 
-                process.readyReadStandardOutput.connect(lambda: self.output_signal.emit(process.readAllStandardOutput().data().decode("utf-8")))
+                # Use partial function to capture the current value of process
+                connect_func = functools.partial(self.output_signal.emit, process.readAllStandardOutput().data().decode("utf-8"))
+                process.readyReadStandardOutput.connect(connect_func)
                 process.waitForFinished(-1)
 
                 if process.exitCode() != 0:
-                    raise Exception(f"Error executing command '{command}': {process.readAllStandardOutput().data().decode('utf-8')}")
+                    output = process.readAllStandardOutput().data().decode('utf-8')
+                    raise subprocess.CalledProcessError(process.exitCode(), command, output)
 
-            except Exception as e:
+            except subprocess.CalledProcessError as e:
                 self.output_signal.emit(f"Error executing command '{command}': {str(e)}")
 
         # All commands have finished, show restart button
