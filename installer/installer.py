@@ -120,7 +120,7 @@ class MaloneyOSInstaller(QWidget):
         self.layout().addWidget(self.stacked_widget)
 
         self.worker_thread = WorkerThread()
-        self.worker_thread.output_signal.connect(self.read_output)
+        self.worker_thread.output_signal.connect(self.update_output)
         self.worker_thread.finished.connect(self.show_restart_button)
 
         self.commands_executed = False  # Flag to track if commands have been executed
@@ -193,9 +193,9 @@ class MaloneyOSInstaller(QWidget):
             self.worker_thread.start()
             self.commands_executed = True
 
-    def read_output(self, output):
+    def update_output(self, output):
         '''
-        Allow the output to be read.
+        Update the output text area in the GUI asynchronously.
         '''
         self.output_text.append(output)
 
@@ -224,6 +224,7 @@ class WorkerThread(QThread):
     Create a worker thread so we can display output real time.
     '''
     output_signal = pyqtSignal(str)
+    update_output_signal = pyqtSignal(str)  # New signal for updating the output in the GUI
 
     def run(self):
         '''
@@ -239,9 +240,11 @@ class WorkerThread(QThread):
                 process.setProcessChannelMode(QProcess.MergedChannels)
                 process.start(command)
 
-                # Use partial function to capture the current value of process
-                connect_func = functools.partial(self.output_signal.emit, process.readAllStandardOutput().data().decode("utf-8"))
-                process.readyReadStandardOutput.connect(connect_func)
+                while process.waitForReadyRead(100):  # Wait for 100 milliseconds
+                    output = process.readAllStandardOutput().data().decode("utf-8")
+                    self.output_signal.emit(output)  # Emit the output signal
+                    self.update_output_signal.emit(output)  # Emit the update signal
+
                 process.waitForFinished(-1)
 
                 if process.exitCode() != 0:
