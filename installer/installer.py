@@ -53,8 +53,8 @@ class MaloneyOSInstaller(QWidget):
                     disk_button.clicked.connect(lambda _, disk=disk: self.select_disk(disk))
                     disk_selection_layout.addWidget(disk_button)
 
-        except Exception as e:
-            # Handle the exception (display an error message, log the error, etc.)
+        except subprocess.CalledProcessError as e:
+            # Handle the specific exception for subprocess.CalledProcessError
             print(f"Error getting disk information: {str(e)}")
 
         next_button = QPushButton("Next")
@@ -211,7 +211,7 @@ class MaloneyOSInstaller(QWidget):
         try:
             process = QProcess()
             process.startDetached("shutdown", ["-r", "now"])
-        except Exception as e:
+        except OSError as e:
             self.output_text.append(f"Error restarting system: {str(e)}")
 
 class WorkerThread(QThread):
@@ -238,9 +238,10 @@ class WorkerThread(QThread):
                 process.waitForFinished(-1)
 
                 if process.exitCode() != 0:
-                    raise Exception(f"Error executing command '{command}': {process.readAllStandardOutput().data().decode('utf-8')}")
+                    output = process.readAllStandardOutput().data().decode('utf-8')
+                    raise subprocess.CalledProcessError(process.exitCode(), command, output)
 
-            except Exception as e:
+            except subprocess.CalledProcessError as e:
                 self.output_signal.emit(f"Error executing command '{command}': {str(e)}")
 
         # All commands have finished, show restart button
