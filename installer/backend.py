@@ -216,9 +216,6 @@ def user():
     """
     Creates the users and groups.
     """
-    # Set root password
-    subprocess.run(["chroot", MNT, "echo", f"root:{PASSWORD}", "|", "chpasswd"], check=True)
-
     # Add user and set password
     subprocess.run(["chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
     subprocess.run(["chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"], check=True)
