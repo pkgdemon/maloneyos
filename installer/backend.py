@@ -246,7 +246,7 @@ def bootloader():
     subprocess.run(["chroot", MNT, "mkdir", "-p", "/efi/EFI/zbm"], check=True)
 
     # Move /zfsbootmenu.EFI to /efi/EFI/zbm/zfsbootmenu.EFI
-    chroot_path = "$MNT"
+    chroot_path = MNT
     source_path = os.path.join(chroot_path, "zfsbootmenu.EFI")
     destination_path = os.path.join(chroot_path, "efi", "EFI", "zbm", "zfsbootmenu.EFI")
     shutil.move(source_path, destination_path)
