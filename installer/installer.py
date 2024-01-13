@@ -213,7 +213,7 @@ class MaloneyOSInstaller(QWidget):
         try:
             process = QProcess()
             process.startDetached("shutdown", ["-r", "now"])
-        except Exception as e:
+        except OSError as e:
             self.output_text.append(f"Error restarting system: {str(e)}")
 
 class WorkerThread(QThread):
