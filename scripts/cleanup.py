@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-
+'''
+Script to cleanup all working directorys in order to rebuild.
+'''
 import os
 import shutil
 
