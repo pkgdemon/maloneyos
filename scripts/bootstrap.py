@@ -181,6 +181,11 @@ def sddm():
         f.write("User=archie\n")
         f.write("Session=plasma\n")
 
+def networkmanager()
+    # Add sddm to display-manager.service
+    wants_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "multi-user.target.wants", "NetworkManager.service")
+    os.symlink("/usr/lib/systemd/system/NetworkManager.service", wants_path)
+
 def user():
     '''
     Setup livecd user and add to groups.
@@ -250,6 +255,7 @@ disable_swap_in_gnupg_mount()
 zfs()
 plasma()
 sddm()
+networkmanager()
 user()
 installer()
 desktop_shortcut()

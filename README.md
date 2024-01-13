@@ -13,6 +13,7 @@ Live media creator for Arch Linux
 * archiso
 * python3
 * sddm
+* networkmanager
 
 ## Usage
 
