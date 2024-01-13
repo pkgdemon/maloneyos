@@ -199,7 +199,7 @@ def bootloader():
     subprocess.run(["chroot", MNT, "zpool", "set", "cachefile=/etc/zfs/zpool.cache", "zroot"], check=True)
 
     # Set the bootfs
-    subprocess.run(["chroot", MNT, "zpool", "set", f"bootfs=zroot/ROOT/arch", "zroot"], check=True)
+    subprocess.run(["chroot", MNT, "zpool", "set", "bootfs=zroot/ROOT/arch", "zroot"], check=True)
 
     # Enable all needed daemons
     subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"], check=True)
@@ -211,10 +211,10 @@ def bootloader():
     subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{MNT}/efi/EFI/zbm/zfsbootmenu.EFI"], check=True)
 
     # Add an entry to your boot menu
-    subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", f"spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"], check=True)
+    subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", "spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"], check=True)
 
     # Set the kernel parameters
-    subprocess.run(["chroot", MNT, "zfs", "set", f"org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid=$(hostid)", "zroot/ROOT"], check=True)
+    subprocess.run(["chroot", MNT, "zfs", "set", "org.zfsbootmenu:commandline=noresume init_on_alloc=0 rw spl.spl_hostid=$(hostid)", "zroot/ROOT"], check=True)
 
 def services():
     """
