@@ -5,6 +5,7 @@ Backend script that will process information collected during the install wizard
 """
 
 import os
+import psutil
 import shutil
 import subprocess
 
@@ -79,6 +80,36 @@ def cleanup():
 
     # Ensure disk has been erased properly with wipefs
     subprocess.run(["wipefs", "-aq", DISK], check=True)
+
+
+def detect_usb_media(file_path='/tmp/arch-usb-stick'):
+    '''
+    This function will be to workaround differences in the Arch Linux installation media.
+    '''
+    # Check if /run/archiso/bootmnt exists
+    if os.path.exists('/run/archiso/bootmnt'):
+        print("/run/archiso/bootmnt already exists. Skipping operation.")
+        return
+
+    # Get the device from which the script is running
+    script_device = os.path.realpath("/")
+
+    # Get all removable devices
+    removable_devices = [dev.device for dev in psutil.disk_partitions() if dev.opts == 'rm']
+
+    # Find the device that contains the script
+    for device in removable_devices:
+        if script_device.startswith(device):
+            arch_usb = device
+            print(f"Arch Linux USB device found: {arch_usb}")
+
+            # Write USB variable to /tmp/arch-usb-stick
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(arch_usb)
+            print(f"USB device written to {file_path}")
+            return
+
+    print("Arch Linux USB device not found.")
 
 def filesystem():
     """
