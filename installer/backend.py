@@ -211,11 +211,12 @@ def bootloader():
     # Enable all needed daemons
     subprocess.run(["chroot", MNT, "systemctl", "enable", "zfs-import-cache", "zfs-import.target", "zfs-mount", "zfs-zed", "zfs.target"], check=True)
 
-    # Create EFI subfolder
-    subprocess.run(["chroot", MNT, "mkdir", "-p", "/efi/EFI/zbm"], check=True)
-
-    # Get the latest zfsbootmenu
-    subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{MNT}/efi/EFI/zbm/zfsbootmenu.EFI"], check=True)
+    # Move /zfsbootmenu.EFI to /efi/EFI/zbm/zfsbootmenu.EFI
+    chroot_path = "$MNT"
+    source_path = os.path.join(chroot_path, "zfsbootmenu.EFI")
+    destination_path = os.path.join(chroot_path, "efi", "EFI", "zbm", "zfsbootmenu.EFI")
+    os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+    shutil.move(source_path, destination_path)
 
     # Add an entry to your boot menu
     subprocess.run(["chroot", MNT, "efibootmgr", "--disk", DISK, "--part", "1", "--create", "--label", "ZFSBootMenu", "--loader", "\\EFI\\zbm\\zfsbootmenu.EFI", "--unicode", "spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid", "--verbose"], check=True)
