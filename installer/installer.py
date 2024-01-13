@@ -10,6 +10,10 @@ class MaloneyOSInstaller(QWidget):
     Define the QStackedWidget class so we can navigate through several screens collecting info and then install.
     '''
     def __init__(self):
+        self.disk = None
+        self.commands_executed = False
+        self.username = ""
+        self.password = ""
         super().__init__()
         self.setWindowTitle("MaloneyOS Installer")
         self.stacked_widget = QStackedWidget(self)
