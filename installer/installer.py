@@ -16,6 +16,8 @@ class MaloneyOSInstaller(QWidget):
     def __init__(self):
         self.disk = None
         self.commands_executed = False
+        self.username = ""
+        self.password = ""
         super().__init__()
         self.setWindowTitle("MaloneyOS Installer")
         self.stacked_widget = QStackedWidget(self)
