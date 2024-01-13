@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Your module docstring here.
+Backend script that will process information collected during the install wizard and install.
 """
 
 import os
@@ -11,9 +11,16 @@ import subprocess
 MNT = "/tmp/maloneyos"
 SWAPSIZE = 4
 RESERVE = 1
-DISK = open("/tmp/selected-disk", encoding="utf-8").read().strip()
-USERNAME = open("/tmp/username", encoding="utf-8").read().strip()
-PASSWORD = open("/tmp/password", encoding="utf-8").read().strip()
+
+# Use 'with' statement for file operations
+with open("/tmp/selected-disk", encoding="utf-8") as disk_file:
+    DISK = disk_file.read().strip()
+
+with open("/tmp/username", encoding="utf-8") as username_file:
+    USERNAME = username_file.read().strip()
+
+with open("/tmp/password", encoding="utf-8") as password_file:
+    PASSWORD = password_file.read().strip()
 
 def cleanup():
     """
