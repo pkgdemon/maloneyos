@@ -3,7 +3,6 @@
 Installer for MaloneyOS that collects info and processes with backend.
 '''
 
-import functools
 import sys
 import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QStackedWidget, QLineEdit, QTextEdit
