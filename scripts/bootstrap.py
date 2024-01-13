@@ -181,7 +181,7 @@ def sddm():
         f.write("User=archie\n")
         f.write("Session=plasma\n")
 
-def networkmanager()
+def networkmanager():
     # Add sddm to display-manager.service
     wants_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "multi-user.target.wants", "NetworkManager.service")
     os.symlink("/usr/lib/systemd/system/NetworkManager.service", wants_path)
