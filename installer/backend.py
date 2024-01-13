@@ -5,9 +5,9 @@ Backend script that will process information collected during the install wizard
 """
 
 import os
-import psutil
 import shutil
 import subprocess
+import psutil
 
 MNT = "/tmp/maloneyos"
 SWAPSIZE = 4
