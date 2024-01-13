@@ -129,6 +129,7 @@ class MaloneyOSInstaller(QWidget):
         '''
         If we have no disk selected prevent next from being pressed.
         '''
+        self.disk = disk
         self.next_button_disk.setEnabled(True)
 
     def show_user_creation(self):
