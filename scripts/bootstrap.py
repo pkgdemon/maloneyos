@@ -127,7 +127,7 @@ def zfs():
         f.write("SigLevel = Never\n")
 
     # Get ZFSbootmenu so it can be installed offline
-    subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{RELENG}/airbootfs/zfsbootmenu.EFI"], check=True)
+    subprocess.run(["wget", "https://get.zfsbootmenu.org/latest.EFI", "-O", f"{RELENG}/airootfs/zfsbootmenu.EFI"], check=True)
 
 def plasma():
     '''
