@@ -1,23 +1,15 @@
 #!/usr/bin/env python3
-'''
-Installer for MaloneyOS that collects info and processes with backend.
-'''
 
-import functools
 import sys
 import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QStackedWidget, QLineEdit, QTextEdit
-from PyQt5.QtCore import QThread, pyqtSignal, QProcess, QTimer, QTextCursor
+from PyQt5.QtCore import QThread, pyqtSignal, QProcess
 
 class MaloneyOSInstaller(QWidget):
     '''
     Define the QStackedWidget class so we can navigate through several screens collecting info and then install.
     '''
     def __init__(self):
-        self.disk = None
-        self.commands_executed = False
-        self.username = ""
-        self.password = ""
         super().__init__()
         self.setWindowTitle("MaloneyOS Installer")
         self.stacked_widget = QStackedWidget(self)
@@ -54,12 +46,8 @@ class MaloneyOSInstaller(QWidget):
                     disk_button.clicked.connect(lambda _, disk=disk: self.select_disk(disk))
                     disk_selection_layout.addWidget(disk_button)
 
-        except subprocess.CalledProcessError as e:
-            # Handle the specific exception for subprocess.CalledProcessError
-            print(f"Error getting disk information: {str(e)}")
-
-        except OSError as e:
-            # Handle the specific exception for OSError
+        except Exception as e:
+            # Handle the exception (display an error message, log the error, etc.)
             print(f"Error getting disk information: {str(e)}")
 
         next_button = QPushButton("Next")
@@ -120,14 +108,10 @@ class MaloneyOSInstaller(QWidget):
         self.layout().addWidget(self.stacked_widget)
 
         self.worker_thread = WorkerThread()
-        self.worker_thread.output_signal.connect(self.update_output)
+        self.worker_thread.output_signal.connect(self.read_output)
         self.worker_thread.finished.connect(self.show_restart_button)
 
         self.commands_executed = False  # Flag to track if commands have been executed
-
-        # Timer to periodically update the GUI with the process output
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_output_periodically)
 
     def show_disk_selection(self):
         '''
@@ -195,12 +179,11 @@ class MaloneyOSInstaller(QWidget):
         if not self.commands_executed:
             self.install_restart_button.setDisabled(True)
             self.worker_thread.start()
-            self.timer.start(100)  # Start the timer to check for output every 100 milliseconds
             self.commands_executed = True
 
-    def update_output(self, output):
+    def read_output(self, output):
         '''
-        Update the output text area in the GUI asynchronously.
+        Allow the output to be read.
         '''
         self.output_text.append(output)
 
@@ -221,32 +204,18 @@ class MaloneyOSInstaller(QWidget):
         try:
             process = QProcess()
             process.startDetached("shutdown", ["-r", "now"])
-        except OSError as e:
+        except Exception as e:
             self.output_text.append(f"Error restarting system: {str(e)}")
-
-    def update_output_periodically(self):
-        '''
-        Update the output text area periodically to display real-time output.
-        '''
-        output = self.worker_thread.read_all_output()
-        if output:
-            self.output_text.moveCursor(QTextCursor.End)
-            self.output_text.insertPlainText(output)
-            self.output_text.moveCursor(QTextCursor.End)
 
 class WorkerThread(QThread):
     '''
-    Create a worker thread so we can display output real-time.
+    Create a worker thread so we can display output real time.
     '''
     output_signal = pyqtSignal(str)
 
-    def __init__(self):
-        super().__init__()
-        self.output = ""
-
     def run(self):
         '''
-        Run the backend with the information we collected with the wizard to install the system.
+        Run the backend with the informatoin we collected with the wizard to install the system.
         '''
         commands = [
             "python3 backend.py"
@@ -258,30 +227,17 @@ class WorkerThread(QThread):
                 process.setProcessChannelMode(QProcess.MergedChannels)
                 process.start(command)
 
-                while process.waitForReadyRead(100):  # Wait for 100 milliseconds
-                    output = process.readAllStandardOutput().data().decode("utf-8")
-                    self.output_signal.emit(output)
-                    self.output += output
-
+                process.readyReadStandardOutput.connect(lambda: self.output_signal.emit(process.readAllStandardOutput().data().decode("utf-8")))
                 process.waitForFinished(-1)
 
                 if process.exitCode() != 0:
-                    output = process.readAllStandardOutput().data().decode('utf-8')
-                    raise subprocess.CalledProcessError(process.exitCode(), command, output)
+                    raise Exception(f"Error executing command '{command}': {process.readAllStandardOutput().data().decode('utf-8')}")
 
-            except subprocess.CalledProcessError as e:
+            except Exception as e:
                 self.output_signal.emit(f"Error executing command '{command}': {str(e)}")
 
         # All commands have finished, show restart button
         self.finished.emit()
-
-    def read_all_output(self):
-        '''
-        Read all the output accumulated so far.
-        '''
-        output = self.output
-        self.output = ""
-        return output
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
