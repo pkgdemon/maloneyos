@@ -3,10 +3,11 @@
 Installer for MaloneyOS that collects info and processes with backend.
 '''
 
+import functools
 import sys
 import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QStackedWidget, QLineEdit, QTextEdit
-from PyQt5.QtCore import QThread, pyqtSignal, QProcess
+from PyQt5.QtCore import QThread, pyqtSignal, QProcess, QTimer, QTextCursor
 
 class MaloneyOSInstaller(QWidget):
     '''
@@ -124,6 +125,10 @@ class MaloneyOSInstaller(QWidget):
 
         self.commands_executed = False  # Flag to track if commands have been executed
 
+        # Timer to periodically update the GUI with the process output
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_output_periodically)
+
     def show_disk_selection(self):
         '''
         Function to show disk selection.
@@ -190,6 +195,7 @@ class MaloneyOSInstaller(QWidget):
         if not self.commands_executed:
             self.install_restart_button.setDisabled(True)
             self.worker_thread.start()
+            self.timer.start(100)  # Start the timer to check for output every 100 milliseconds
             self.commands_executed = True
 
     def update_output(self, output):
@@ -218,16 +224,29 @@ class MaloneyOSInstaller(QWidget):
         except OSError as e:
             self.output_text.append(f"Error restarting system: {str(e)}")
 
+    def update_output_periodically(self):
+        '''
+        Update the output text area periodically to display real-time output.
+        '''
+        output = self.worker_thread.read_all_output()
+        if output:
+            self.output_text.moveCursor(QTextCursor.End)
+            self.output_text.insertPlainText(output)
+            self.output_text.moveCursor(QTextCursor.End)
+
 class WorkerThread(QThread):
     '''
-    Create a worker thread so we can display output real time.
+    Create a worker thread so we can display output real-time.
     '''
     output_signal = pyqtSignal(str)
-    update_output_signal = pyqtSignal(str)  # New signal for updating the output in the GUI
+
+    def __init__(self):
+        super().__init__()
+        self.output = ""
 
     def run(self):
         '''
-        Run the backend with the informatoin we collected with the wizard to install the system.
+        Run the backend with the information we collected with the wizard to install the system.
         '''
         commands = [
             "python3 backend.py"
@@ -241,8 +260,8 @@ class WorkerThread(QThread):
 
                 while process.waitForReadyRead(100):  # Wait for 100 milliseconds
                     output = process.readAllStandardOutput().data().decode("utf-8")
-                    self.output_signal.emit(output)  # Emit the output signal
-                    self.update_output_signal.emit(output)  # Emit the update signal
+                    self.output_signal.emit(output)
+                    self.output += output
 
                 process.waitForFinished(-1)
 
@@ -255,6 +274,14 @@ class WorkerThread(QThread):
 
         # All commands have finished, show restart button
         self.finished.emit()
+
+    def read_all_output(self):
+        '''
+        Read all the output accumulated so far.
+        '''
+        output = self.output
+        self.output = ""
+        return output
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
