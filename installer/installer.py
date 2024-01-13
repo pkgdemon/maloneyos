@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Installer for MaloneyOS that collects info and processes with backend.
+'''
 
 import functools
 import sys
