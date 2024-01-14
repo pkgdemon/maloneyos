@@ -195,10 +195,12 @@ def networkmanager():
     # Remove systemd-networkd and resolved services
     base_dir = "/tmp/maloneyos/archlive/airootfs/"
     networkd_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-networkd.service")
-    resolved_symlink = os.path.join(base_dir, "etc/systemd/system/dbus-org.freedesktop.resolve1.service")
+    resolved_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-resolved.service")
+    resolved_symlink2 = os.path.join(base_dir, "etc/systemd/system/dbus-org.freedesktop.resolve1.service")
     try:
         os.remove(networkd_symlink)
         os.remove(resolved_symlink)
+        os.remove(resolved_symlink2)
         print("Symlinks removed successfully.")
     except OSError as e:
         print(f"Error removing symlinks: {e}")
