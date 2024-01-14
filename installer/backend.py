@@ -230,11 +230,13 @@ def user():
     # Set PASSWORD for the user
     subprocess.run(["chroot", MNT, "chpasswd"], input=f"{USERNAME}:{PASSWORD}\n", text=True, check=True)
 
-    # Enable sudo for the wheel group
-    subprocess.run(["chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
-
     # Remove sddm.conf autologin
     subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"], check=True)
+
+    # Add user to sudoers.d
+    with open(f"{sudoers_dir}/00_{USERNAME}", "w", encoding="utf-8") as sudoers_file:
+        sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
+    sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
 
     # Remove installer from installed system
     subprocess.run(["rm", "-rf", f"{MNT}/maloneyos"], check=True)
