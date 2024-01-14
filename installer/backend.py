@@ -63,7 +63,7 @@ def cleanup():
 
     """
     # Check if the boot menu entry already exists
-    entries = ["MaloneyOS"]
+    entries = ["ZFSBootMenu"]
     for entry in entries:
         existing_entry = subprocess.check_output(["efibootmgr"]).decode()
         if entry in existing_entry:
