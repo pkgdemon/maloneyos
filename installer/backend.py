@@ -228,7 +228,6 @@ def user():
     # Add user to sudoers.d
     with open(f"{sudoers_dir}/00_{USERNAME}", "w", encoding="utf-8") as sudoers_file:
         sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
-    sudoers_file.write(f"{USERNAME} ALL=(ALL) ALL\n")
 
     # Remove installer from installed system
     subprocess.run(["rm", "-rf", f"{MNT}/maloneyos"], check=True)
