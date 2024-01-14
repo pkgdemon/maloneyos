@@ -140,6 +140,7 @@ def plasma():
         "discover",
         "dolphin",
         "flatpak",
+        "flatpak-kcm",
         "kate",
         "kdialog",
         "kjournald",
@@ -155,6 +156,7 @@ def plasma():
         "pyqt5",
         "spectacle",
         "wget",
+        "xdg-desktop-portal-kde"
     ]
     with open(os.path.join(RELENG, "packages.x86_64"), "a", encoding="utf-8") as f:
         for package in packages:
