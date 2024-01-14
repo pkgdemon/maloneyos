@@ -45,8 +45,6 @@ def detect_media():
             print(f"Install from USB device detected: {arch_usb}")
             return
 
-    print("Install from optical media detected")
-
 def cleanup():
     """
     Cleans up the system by removing existing boot entries, unmounting file systems,
