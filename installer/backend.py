@@ -45,6 +45,22 @@ def detect_media():
             print(f"Install from USB device detected: {arch_usb}")
             return
 
+def remove_existing_entry(entry_name):
+    result = subprocess.run(["efibootmgr"], stdout=subprocess.PIPE, text=True, check=True)
+    existing_entry = result.stdout
+
+    if entry_name in existing_entry:
+        # Find the entry number in the output
+        entry_number_start = existing_entry.find("Boot")
+        entry_number_end = existing_entry.find("\n", entry_number_start)
+        entry_number = existing_entry[entry_number_start:entry_number_end].replace("Boot", "").strip()
+
+        # Extract only the numeric part
+        entry_number = entry_number.split()[0]
+
+        # Remove the existing entry
+        subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
+
 def cleanup():
     """
     Cleans up the system by removing existing boot entries, unmounting file systems,
@@ -62,19 +78,6 @@ def cleanup():
     Note: The constants MNT and DISK are assumed to be defined elsewhere.
 
     """
-    # Check if the boot menu entry already exists
-    entries = ["ZFSBootMenu"]
-    for entry in entries:
-        existing_entry = subprocess.check_output(["efibootmgr"]).decode()
-        if entry in existing_entry:
-            # Find the entry number in the output
-            entry_number_start = existing_entry.find("Boot")
-            entry_number_end = existing_entry.find("\n", entry_number_start)
-            entry_number = existing_entry[entry_number_start:entry_number_end].replace("Boot", "").strip()
-            # Remove the existing entry
-            subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
-            
-
     # Make MNT directory if it does not exist
     if not os.path.isdir(MNT):
         os.mkdir(MNT)
@@ -288,6 +291,7 @@ def export_pools():
     subprocess.run(["zpool", "export", "-a"], check=True)
 
 detect_media()
+remove_existing_entry("ZFSBootMenu")
 cleanup()
 filesystem()
 install()
