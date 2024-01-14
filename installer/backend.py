@@ -216,9 +216,11 @@ def user():
     """
     Creates the users and groups.
     """
-    # Add user and set password
+    # Add user
     subprocess.run(["chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
-    subprocess.run(["chroot", MNT, "echo", f"{USERNAME}:{PASSWORD}", "|", "chpasswd"], check=True)
+
+    # Set PASSWORD for the user
+    subprocess.run(["chroot", MNT, "chpasswd"], input=f"{USERNAME}:{PASSWORD}\n", text=True, check=True)
 
     # Enable sudo for the wheel group
     subprocess.run(["chroot", MNT, "sed", "-i", "/%wheel ALL=(ALL) ALL/s/^# //", "/etc/sudoers"], check=True)
