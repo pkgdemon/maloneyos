@@ -216,6 +216,14 @@ def user():
     """
     Creates the users and groups.
     """
+    # Remove user "archie" from chroot
+    subprocess.run(["chroot", MNT, "userdel", "archie"], check=True)
+    subprocess.run(["chroot", MNT, "rm", "-rf", "/home/archie"], check=True)
+
+    # Remove archie from sudoers
+    sudoers_dir = "/tmp/maloneyos/etc/sudoers.d"
+    os.remove(f"{sudoers_dir}/00_archie")
+
     # Add user
     subprocess.run(["chroot", MNT, "useradd", "-m", "-g", "users", "-G", "wheel", USERNAME], check=True)
 
@@ -227,6 +235,9 @@ def user():
 
     # Remove sddm.conf autologin
     subprocess.run(["chroot", MNT, "rm", "/etc/sddm.conf.d/autologin.conf"], check=True)
+
+    # Remove installer from installed system
+    subprocess.run(["rm", "-rf", f"{MNT}/maloneyos"], check=True)
 
 def bootloader():
     """
