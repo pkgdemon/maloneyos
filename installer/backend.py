@@ -6,6 +6,7 @@ Backend script that will process information collected during the install wizard
 
 import os
 import shutil
+import re
 import subprocess
 import psutil
 
@@ -46,20 +47,20 @@ def detect_media():
             return
 
 def remove_existing_entry(entry_name):
+    '''
+    Function to look for existing EFI boot menu entry and remove it.
+    '''
     result = subprocess.run(["efibootmgr"], stdout=subprocess.PIPE, text=True, check=True)
     existing_entry = result.stdout
 
     if entry_name in existing_entry:
-        # Find the entry number in the output
-        entry_number_start = existing_entry.find("Boot")
-        entry_number_end = existing_entry.find("\n", entry_number_start)
-        entry_number = existing_entry[entry_number_start:entry_number_end].replace("Boot", "").strip()
+        # Use regex to find the entry number
+        match = re.search(r'Boot(\d+)', existing_entry)
+        if match:
+            entry_number = match.group(1)
 
-        # Extract only the numeric part
-        entry_number = entry_number.split()[0]
-
-        # Remove the existing entry
-        subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
+            # Remove the existing entry
+            subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
 
 def cleanup():
     """
