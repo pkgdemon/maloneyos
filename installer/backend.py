@@ -207,7 +207,7 @@ def mkinitcpio():
         f.write("fallback_options=\"-S autodetect\"\n")
 
     # Configure mkinitcpio
-    subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems|zfs filesystems|", "/etc/mkinitcpio.conf"], check=True)
+    subprocess.run(["chroot", MNT, "sed", "-i", "s|filesystems fsck|zfs filesystems|", "/etc/mkinitcpio.conf"], check=True)
 
     # Run mkinitcpio
     subprocess.run(["chroot", "/tmp/maloneyos", "mkinitcpio", "-P"], check=True)
