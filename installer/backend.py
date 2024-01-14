@@ -23,27 +23,59 @@ with open("/tmp/username", encoding="utf-8") as username_file:
 with open("/tmp/password", encoding="utf-8") as password_file:
     PASSWORD = password_file.read().strip()
 
+def get_iso_device():
+    '''
+    This function only runs if it needs to when bootmnt is not mounted.
+    '''
+    try:
+        # Run the shell command
+        command = "lsblk -f | awk '/ARCH/ && /iso/ && NF {getline; print $1}' | sed 's/[^a-zA-Z0-9]//g'"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+
+        # Return the cleaned device name with /dev/ prefix
+        iso_device = result.stdout.strip()
+        return f"/dev/{iso_device}"
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        return None
+
 def detect_media():
     '''
-    This function will be to workaround differences in the Arch Linux installation media.
+    This function will get iso device if bootmnt is not mounted.
     '''
-    # Check if /run/archiso/bootmnt exists
-    if os.path.exists('/run/archiso/bootmnt'):
-        print("/run/archiso/bootmnt already exists. Skipping operation.")
-        return
+    try:
+        # Check if /run/archiso/bootmnt exists
+        bootmnt_path = '/run/archiso/bootmnt'
 
-    # Get the device from which the script is running
-    script_device = os.path.realpath("/")
-
-    # Get all removable devices
-    removable_devices = [dev.device for dev in psutil.disk_partitions() if dev.opts == 'rm']
-
-    # Find the device that contains the script
-    for device in removable_devices:
-        if script_device.startswith(device):
-            arch_usb = device
-            print(f"Install from USB device detected: {arch_usb}")
+        if os.path.exists(bootmnt_path):
+            print(f"{bootmnt_path} already exists. Skipping operation.")
             return
+
+        # Get the ISO device
+        iso_device = get_iso_device()
+
+        if iso_device:
+            print(f"The ISO device is: {iso_device}")
+
+            # Create /run/archiso/bootmnt directory
+            os.makedirs(bootmnt_path, exist_ok=True)
+            print(f"Created directory: {bootmnt_path}")
+
+            # Mount the ISO device to /run/archiso/bootmnt
+            subprocess.run(['mount', iso_device, bootmnt_path], check=True)
+            print(f"Mounted {iso_device} to {bootmnt_path}")
+
+            # Continue with the rest of your logic here
+
+        else:
+            print("Failed to retrieve ISO device.")
+            return
+
+    except FileNotFoundError as e:
+        print(f"File not found error: {e}")
+    except PermissionError as e:
+        print(f"Permission error: {e}")
 
 def cleanup():
     """
