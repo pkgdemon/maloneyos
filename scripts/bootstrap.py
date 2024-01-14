@@ -205,6 +205,15 @@ def networkmanager():
     except OSError as e:
         print(f"Error removing symlinks: {e}")
 
+    # Remove networking packages we do not want from packages.x86_64
+    with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
+        lines = f.readlines()
+        f.seek(0)
+        for line in lines:
+            if not line.startswith(("systemd-resolvconf")):
+                f.write(line)
+        f.truncate()
+
 def user():
     '''
     Setup livecd user and add to groups.
