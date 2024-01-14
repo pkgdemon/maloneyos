@@ -197,10 +197,14 @@ def networkmanager():
     networkd_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-networkd.service")
     resolved_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-resolved.service")
     resolved_symlink2 = os.path.join(base_dir, "etc/systemd/system/dbus-org.freedesktop.resolve1.service")
+    netonline_symlink = os.path.join(base_dir, "etc/systemd/system/network-online.target.wants/network-online.target.wants")
+    netsocket_symlink = os.path.join(base_dir, "etc/systemd/system/sockets.target.wants/systemd-networkd.socket")
     try:
         os.remove(networkd_symlink)
         os.remove(resolved_symlink)
         os.remove(resolved_symlink2)
+        os.remove(netonline_symlink)
+        os.remove(netsocket_symlink)
         print("Symlinks removed successfully.")
     except OSError as e:
         print(f"Error removing symlinks: {e}")
