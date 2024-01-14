@@ -69,10 +69,11 @@ def cleanup():
         if entry in existing_entry:
             # Find the entry number in the output
             entry_number_start = existing_entry.find("Boot")
-            entry_number_end = existing_entry.find("*", entry_number_start)
+            entry_number_end = existing_entry.find("\n", entry_number_start)
             entry_number = existing_entry[entry_number_start:entry_number_end].replace("Boot", "").strip()
             # Remove the existing entry
             subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
+            
 
     # Make MNT directory if it does not exist
     if not os.path.isdir(MNT):
