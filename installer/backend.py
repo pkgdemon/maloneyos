@@ -48,19 +48,22 @@ def detect_media():
 
 def remove_existing_entry(entry_name):
     '''
-    Function to look for existing EFI boot menu entry and remove it.
+    Function to look for an existing EFI boot menu entry and remove it.
     '''
     result = subprocess.run(["efibootmgr"], stdout=subprocess.PIPE, text=True, check=True)
     existing_entry = result.stdout
 
-    if entry_name in existing_entry:
-        # Use regex to find the entry number
-        match = re.search(r'Boot(\d+)', existing_entry)
-        if match:
-            entry_number = match.group(1)
+    # Use regex to find the entry number based on the entry name
+    match = re.search(fr'{entry_name}\s*Boot(\d+)', existing_entry)
+    if match:
+        entry_number = match.group(1)
 
-            # Remove the existing entry
-            subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
+        # Remove the existing entry
+        subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
+        print(f"Entry with name '{entry_name}' found removing '{entry_number}'")
+    else:
+        print(f"No entry with name '{entry_name}' found.")
+
 
 def cleanup():
     """
