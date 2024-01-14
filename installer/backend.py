@@ -67,8 +67,11 @@ def cleanup():
     for entry in entries:
         existing_entry = subprocess.check_output(["efibootmgr"]).decode()
         if entry in existing_entry:
-            # Remove the existing entries before creating a new one
-            entry_number = existing_entry.split()[0].replace("Boot", "").replace("*", "")
+            # Find the entry number in the output
+            entry_number_start = existing_entry.find("Boot")
+            entry_number_end = existing_entry.find("*", entry_number_start)
+            entry_number = existing_entry[entry_number_start:entry_number_end].replace("Boot", "").strip()
+            # Remove the existing entry
             subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
 
     # Make MNT directory if it does not exist
