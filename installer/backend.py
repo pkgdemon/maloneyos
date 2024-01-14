@@ -23,6 +23,28 @@ with open("/tmp/username", encoding="utf-8") as username_file:
 with open("/tmp/password", encoding="utf-8") as password_file:
     PASSWORD = password_file.read().strip()
 
+def detect_media():
+    '''
+    This function will be to workaround differences in the Arch Linux installation media.
+    '''
+    # Check if /run/archiso/bootmnt exists
+    if os.path.exists('/run/archiso/bootmnt'):
+        print("/run/archiso/bootmnt already exists. Skipping operation.")
+        return
+
+    # Get the device from which the script is running
+    script_device = os.path.realpath("/")
+
+    # Get all removable devices
+    removable_devices = [dev.device for dev in psutil.disk_partitions() if dev.opts == 'rm']
+
+    # Find the device that contains the script
+    for device in removable_devices:
+        if script_device.startswith(device):
+            arch_usb = device
+            print(f"Install from USB device detected: {arch_usb}")
+            return
+
 def cleanup():
     """
     Cleans up the system by removing existing boot entries, unmounting file systems,
@@ -71,28 +93,6 @@ def cleanup():
 
     # Ensure disk has been erased properly with wipefs
     subprocess.run(["wipefs", "-aq", DISK], check=True)
-
-def detect_media():
-    '''
-    This function will be to workaround differences in the Arch Linux installation media.
-    '''
-    # Check if /run/archiso/bootmnt exists
-    if os.path.exists('/run/archiso/bootmnt'):
-        print("/run/archiso/bootmnt already exists. Skipping operation.")
-        return
-
-    # Get the device from which the script is running
-    script_device = os.path.realpath("/")
-
-    # Get all removable devices
-    removable_devices = [dev.device for dev in psutil.disk_partitions() if dev.opts == 'rm']
-
-    # Find the device that contains the script
-    for device in removable_devices:
-        if script_device.startswith(device):
-            arch_usb = device
-            print(f"Install from USB device detected: {arch_usb}")
-            return
 
 def filesystem():
     """
@@ -274,8 +274,8 @@ def export_pools():
     """
     subprocess.run(["zpool", "export", "-a"], check=True)
 
-cleanup()
 detect_media()
+cleanup()
 filesystem()
 install()
 locale()
