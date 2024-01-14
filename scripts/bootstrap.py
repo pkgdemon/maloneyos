@@ -193,6 +193,17 @@ def networkmanager():
     wants_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "multi-user.target.wants", "NetworkManager.service")
     os.symlink("/usr/lib/systemd/system/NetworkManager.service", wants_path)
 
+    # Remove systemd-networkd and resolved services
+    base_dir = "/tmp/maloneyos/archlive/airootfs/"
+    networkd_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-networkd.service")
+    resolved_symlink = os.path.join(base_dir, "etc/systemd/system/dbus-org.freedesktop.resolve1.service")
+    try:
+        os.remove(networkd_symlink)
+        os.remove(resolved_symlink)
+        print("Symlinks removed successfully.")
+    except OSError as e:
+        print(f"Error removing symlinks: {e}")
+
 def user():
     '''
     Setup livecd user and add to groups.
