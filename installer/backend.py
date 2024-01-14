@@ -6,7 +6,6 @@ Backend script that will process information collected during the install wizard
 
 import os
 import shutil
-import re
 import subprocess
 import psutil
 
