@@ -46,25 +46,6 @@ def detect_media():
             print(f"Install from USB device detected: {arch_usb}")
             return
 
-def remove_existing_entry(entry_name):
-    '''
-    Function to look for an existing EFI boot menu entry and remove it.
-    '''
-    result = subprocess.run(["efibootmgr"], stdout=subprocess.PIPE, text=True, check=True)
-    existing_entry = result.stdout
-
-    # Use regex to find the entry number based on the entry name
-    match = re.search(fr'{entry_name}\s*Boot(\d+)', existing_entry)
-    if match:
-        entry_number = match.group(1)
-
-        # Remove the existing entry
-        subprocess.run(["efibootmgr", "-Bb", entry_number], check=True)
-        print(f"Entry with name '{entry_name}' found removing '{entry_number}'")
-    else:
-        print(f"No entry with name '{entry_name}' found.")
-
-
 def cleanup():
     """
     Cleans up the system by removing existing boot entries, unmounting file systems,
@@ -295,7 +276,6 @@ def export_pools():
     subprocess.run(["zpool", "export", "-a"], check=True)
 
 detect_media()
-remove_existing_entry("ZFSBootMenu")
 cleanup()
 filesystem()
 install()
