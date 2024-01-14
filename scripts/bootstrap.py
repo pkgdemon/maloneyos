@@ -139,6 +139,7 @@ def plasma():
         "ark",
         "discover",
         "dolphin",
+        "falkon",
         "flatpak",
         "flatpak-kcm",
         "kate",
