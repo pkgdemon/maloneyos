@@ -184,6 +184,48 @@ def sddm():
         f.write("User=archie\n")
         f.write("Session=plasma\n")
 
+def remove_systemd_networkd():
+    '''
+    Function to remove systemd-networkd so we can replace with NetworkManager.
+    '''
+    # Remove systemd-networkd and resolved services
+    base_dir = "/tmp/maloneyos/archlive/airootfs/etc/systemd/system/"
+    networkd_symlink = os.path.join(base_dir, "multi-user.target.wants/systemd-networkd.service")
+    resolved_symlink = os.path.join(base_dir, "multi-user.target.wants/systemd-resolved.service")
+    resolved_symlink2 = os.path.join(base_dir, "dbus-org.freedesktop.resolve1.service")
+    network1_symlink = os.path.join(base_dir, "dbus-org.freedesktop.network1.service")
+    netonline_symlink = os.path.join(base_dir, "network-online.target.wants/network-online.target.wants")
+    netsocket_symlink = os.path.join(base_dir, "sockets.target.wants/systemd-networkd.socket")
+
+    # Define the paths to the directories you want to remove
+    directory1 = os.path.join(base_dir, "network-online.target.wants/")
+    directory2 = os.path.join(base_dir, "systemd-networkd-wait-online.service.d/")
+
+    # Remove the specified symlinks
+    try:
+        os.remove(networkd_symlink)
+        os.remove(resolved_symlink)
+        os.remove(resolved_symlink2)
+        os.remove(network1_symlink)
+        os.remove(netonline_symlink)
+        os.remove(netsocket_symlink)
+        print("Symlinks removed successfully.")
+    except OSError as e:
+        print(f"Error removing symlinks: {e}")
+
+    # Remove the specified directories and their contents
+    try:
+        shutil.rmtree(directory1)
+        print(f"Directory {directory1} and its contents removed successfully.")
+    except FileNotFoundError:
+        print(f"Directory {directory1} not found.")
+
+    try:
+        shutil.rmtree(directory2)
+        print(f"Directory {directory2} and its contents removed successfully.")
+    except FileNotFoundError:
+        print(f"Directory {directory2} not found.")
+
 def networkmanager():
     '''
     Symlink NetworkManager service from the installed system into overlay for ISO.
@@ -191,32 +233,6 @@ def networkmanager():
     # Add NetworkManager service to multi-user-target-wants
     wants_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "multi-user.target.wants", "NetworkManager.service")
     os.symlink("/usr/lib/systemd/system/NetworkManager.service", wants_path)
-
-    # Remove systemd-networkd and resolved services
-    base_dir = "/tmp/maloneyos/archlive/airootfs/"
-    networkd_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-networkd.service")
-    resolved_symlink = os.path.join(base_dir, "etc/systemd/system/multi-user.target.wants/systemd-resolved.service")
-    resolved_symlink2 = os.path.join(base_dir, "etc/systemd/system/dbus-org.freedesktop.resolve1.service")
-    netonline_symlink = os.path.join(base_dir, "etc/systemd/system/network-online.target.wants/network-online.target.wants")
-    netsocket_symlink = os.path.join(base_dir, "etc/systemd/system/sockets.target.wants/systemd-networkd.socket")
-    try:
-        os.remove(networkd_symlink)
-        os.remove(resolved_symlink)
-        os.remove(resolved_symlink2)
-        os.remove(netonline_symlink)
-        os.remove(netsocket_symlink)
-        print("Symlinks removed successfully.")
-    except OSError as e:
-        print(f"Error removing symlinks: {e}")
-
-    # Remove networking packages we do not want from packages.x86_64
-    with open(os.path.join(RELENG, "packages.x86_64"), "r+", encoding="utf-8") as f:
-        lines = f.readlines()
-        f.seek(0)
-        for line in lines:
-            if not line.startswith(("systemd-resolvconf")):
-                f.write(line)
-        f.truncate()
 
 def user():
     '''
@@ -287,6 +303,7 @@ disable_swap_in_gnupg_mount()
 zfs()
 plasma()
 sddm()
+remove_systemd_networkd()
 networkmanager()
 user()
 installer()
