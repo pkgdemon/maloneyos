@@ -98,18 +98,29 @@ def replace_kernel_in_mkinitcpio():
         f.write(content)
         f.truncate()
 
-def disable_swap_in_gnupg_mount():
+def recreate_systemd_overlay():
     '''
-    When using LTS kernel the swap option causes systemd services to error on livecd.  This corrects for now.
+    Function to remove systemd-networkd so we can replace with NetworkManager.
     '''
-    # Linux LTS doesn't support swapfiles option
-    systemd_mount_path = os.path.join(RELENG, "airootfs", "etc", "systemd", "system", "etc-pacman.d-gnupg.mount")
-    with open(systemd_mount_path, "r+", encoding="utf8") as f:
-        content = f.read()
-        content = content.replace(",noswap", "")
-        f.seek(0)
-        f.write(content)
-        f.truncate()
+    # Remove systemd-networkd and resolved services
+    base_dir = "/tmp/maloneyos/archlive/airootfs/etc/"
+
+    # Define the paths to the directories you want to remove
+    directory1 = os.path.join(base_dir, "systemd/")
+
+    # Remove the specified directories and their contents
+    try:
+        shutil.rmtree(directory1)
+        print(f"Directory {directory1} and its contents removed successfully.")
+    except FileNotFoundError:
+        print(f"Directory {directory1} not found.")
+
+    # Recreate the specified directory
+    try:
+        os.makedirs(os.path.join(directory1, "system/multi-user.target.wants/"))
+        print(f"Directory {os.path.join(directory1, 'system/multi-user.target.wants/')} created successfully.")
+    except FileNotFoundError:
+        print(f"Directory {directory1} not found.")
 
 def zfs():
     '''
@@ -184,53 +195,6 @@ def sddm():
         f.write("User=archie\n")
         f.write("Session=plasma\n")
 
-def remove_systemd_networkd():
-    '''
-    Function to remove systemd-networkd so we can replace with NetworkManager.
-    '''
-    # Remove systemd-networkd and resolved services
-    base_dir = "/tmp/maloneyos/archlive/airootfs/etc/systemd/system/"
-    networkd_symlink = os.path.join(base_dir, "multi-user.target.wants/systemd-networkd.service")
-    resolved_symlink = os.path.join(base_dir, "multi-user.target.wants/systemd-resolved.service")
-    resolved_symlink2 = os.path.join(base_dir, "dbus-org.freedesktop.resolve1.service")
-    network1_symlink = os.path.join(base_dir, "dbus-org.freedesktop.network1.service")
-    netonline_symlink = os.path.join(base_dir, "network-online.target.wants/network-online.target.wants")
-
-    # Define the paths to the directories you want to remove
-    directory1 = os.path.join(base_dir, "network-online.target.wants/")
-    directory2 = os.path.join(base_dir, "systemd-networkd-wait-online.service.d/")
-    directory3 = os.path.join(base_dir, "sockets.target.wants")
-
-    # Remove the specified symlinks
-    try:
-        os.remove(networkd_symlink)
-        os.remove(resolved_symlink)
-        os.remove(resolved_symlink2)
-        os.remove(network1_symlink)
-        os.remove(netonline_symlink)
-        print("Symlinks removed successfully.")
-    except OSError as e:
-        print(f"Error removing symlinks: {e}")
-
-    # Remove the specified directories and their contents
-    try:
-        shutil.rmtree(directory1)
-        print(f"Directory {directory1} and its contents removed successfully.")
-    except FileNotFoundError:
-        print(f"Directory {directory1} not found.")
-
-    try:
-        shutil.rmtree(directory2)
-        print(f"Directory {directory2} and its contents removed successfully.")
-    except FileNotFoundError:
-        print(f"Directory {directory2} not found.")
-
-    try:
-        shutil.rmtree(directory3)
-        print(f"Directory {directory3} and its contents removed successfully.")
-    except FileNotFoundError:
-        print(f"Directory {directory3} not found.")
-
 def networkmanager():
     '''
     Symlink NetworkManager service from the installed system into overlay for ISO.
@@ -304,11 +268,10 @@ config()
 replace_kernel_in_packages()
 replace_kernel_in_bootloader()
 replace_kernel_in_mkinitcpio()
-disable_swap_in_gnupg_mount()
+recreate_systemd_overlay()
 zfs()
 plasma()
 sddm()
-remove_systemd_networkd()
 networkmanager()
 user()
 installer()
