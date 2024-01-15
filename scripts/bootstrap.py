@@ -195,11 +195,11 @@ def remove_systemd_networkd():
     resolved_symlink2 = os.path.join(base_dir, "dbus-org.freedesktop.resolve1.service")
     network1_symlink = os.path.join(base_dir, "dbus-org.freedesktop.network1.service")
     netonline_symlink = os.path.join(base_dir, "network-online.target.wants/network-online.target.wants")
-    netsocket_symlink = os.path.join(base_dir, "sockets.target.wants/systemd-networkd.socket")
 
     # Define the paths to the directories you want to remove
     directory1 = os.path.join(base_dir, "network-online.target.wants/")
     directory2 = os.path.join(base_dir, "systemd-networkd-wait-online.service.d/")
+    directory3 = os.path.join(base_dir, "sockets.target.wants")
 
     # Remove the specified symlinks
     try:
@@ -208,7 +208,6 @@ def remove_systemd_networkd():
         os.remove(resolved_symlink2)
         os.remove(network1_symlink)
         os.remove(netonline_symlink)
-        os.remove(netsocket_symlink)
         print("Symlinks removed successfully.")
     except OSError as e:
         print(f"Error removing symlinks: {e}")
@@ -225,6 +224,12 @@ def remove_systemd_networkd():
         print(f"Directory {directory2} and its contents removed successfully.")
     except FileNotFoundError:
         print(f"Directory {directory2} not found.")
+
+    try:
+        shutil.rmtree(directory3)
+        print(f"Directory {directory3} and its contents removed successfully.")
+    except FileNotFoundError:
+        print(f"Directory {directory3} not found.")
 
 def networkmanager():
     '''
