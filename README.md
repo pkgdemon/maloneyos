@@ -1,6 +1,6 @@
 maloneyos
 =========
-MaloneyOS is a distinct Linux distribution crafted for personal use. Unlike typical distributions, MaloneyOS is tailored exclusively for individual use, with a focus on my customizations and personal preferences.
+MaloneyOS is a distinct Linux distribution crafted for personal use. Unlike typical distributions, MaloneyOS is tailored exclusively for my individual use, with a focus on my customizations and personal preferences.  
 
 ## Key Features
 
