@@ -19,6 +19,8 @@ MaloneyOS is a distinct Linux distribution crafted for personal use. Unlike typi
 
 - **Flatpak Integration:** Flatpaks are enabled, and the Discover application is configured exclusively for flatpaks. This design choice separates system updates with boot environments from application updates, providing a more streamlined and efficient update process.
 
+- **Arch Linux Foundation:** Last but not least MaloneyOS is built upon the solid foundation of Arch Linux, a renowned and community-driven distribution. The community actively contributes to the improvement and maintenance of the distribution, fostering a dynamic and responsive ecosystem.  Arch Linux boasts comprehensive and well-maintained documentation, often regarded as among the best in the Linux community. 
+
 Explore the latest release ISO for AMD64 systems with UEFI by clicking [here](https://github.com/pkgdemon/maloneyos/releases).
 
 ## Requirements for building from source code
