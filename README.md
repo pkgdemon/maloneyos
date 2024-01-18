@@ -2,6 +2,9 @@ maloneyos
 =========
 MaloneyOS is a distinct Linux distribution crafted for personal use. Unlike typical distributions, MaloneyOS is tailored exclusively for my individual use, with a focus on my customizations and personal preferences.  
 
+![Screenshot_20240117_201413](https://github.com/pkgdemon/maloneyos/assets/4109732/bd06c1f1-7779-43be-8cbf-5100822a2131)
+
+
 ## Key Features
 
 - **ZFS on Root Installation:** One of the unique aspects of MaloneyOS is the utilization of ZFS as the default filesystem through a single pool installation. The inclusion of the `zfs-dkms` package, along with a long-term release kernel, aims to minimize potential breakages associated with ZFS being an external kernel module.
