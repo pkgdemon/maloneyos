@@ -11,7 +11,7 @@ MaloneyOS is a distinct Linux distribution crafted for personal use. Unlike typi
 
 - **Streamlined Bootloader Configuration:** By opting for a single ZFS pool instead of `bpool/rpool`, the need for tools like `zsys` to prevent grub-related issues is eliminated. Additionally, the inclusion of ZFSbootmenu, when paired with zectl` accessible through the installation of from AUR, allows for easy management and display of boot environments.
 
-- **Custom Installer:** MaloneyOS features a custom installer developed to provide a deeper level of customization. This decision was motivated by the desire to learn PyQT5 and overcome challenges encountered with packaging Calamares from the AUR. The result is a distribution that reflects a commitment to both functionality and personal learning goals.
+- **Custom Installer:** MaloneyOS features a custom installer developed to provide a deeper level of customization over the ZFS layout in backend.py. This decision was motivated by the desire to learn PyQT5 and overcome challenges encountered with packaging Calamares from the AUR. The result is a distribution that reflects a commitment to both functionality and personal learning goals.
 
 - **KDE Desktop Environment:** MaloneyOS adopts KDE as the default desktop environment, offering a visually appealing and user-friendly interface.
 
