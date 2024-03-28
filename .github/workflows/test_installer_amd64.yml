@@ -24,5 +24,5 @@ jobs:
     - name: Build on Arch Linux
       run: |
         pacman -Syu --noconfirm
-        pacman -S --noconfirm archiso python3 sddm networkmanager
+        pacman -S --noconfirm archiso base-devel networkmanager python3 sddm
         make release
