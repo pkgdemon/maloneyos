@@ -1,0 +1,28 @@
+name: Build on Arch Linux AMD64
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+        image: archlinux
+        options: >-
+          --privileged
+          --name archlinux
+        ports:
+          - 8080:8080
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+    - name: Build on Arch Linux
+      run: |
+        pacman -Syu --noconfirm
+        pacman -S --noconfirm archiso python3 sddm networkmanager
+        make release
