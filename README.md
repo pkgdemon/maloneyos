@@ -26,9 +26,11 @@ Explore the latest release ISO for AMD64 systems with UEFI by clicking [here](ht
 ## Requirements for building from source code
 
 * archiso
+* base-devel
 * python3
 * sddm
 * networkmanager
+* wget
 
 ## Generating the ISO
 
