@@ -146,7 +146,6 @@ def plasma():
     '''
     packages = [
         "plasma-desktop",
-        "plasma-wayland-session",
         "ark",
         "discover",
         "dolphin",
