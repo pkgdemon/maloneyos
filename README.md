@@ -27,6 +27,7 @@ Explore the latest release ISO for AMD64 systems with UEFI by clicking [here](ht
 
 * archiso
 * base-devel
+* git
 * python3
 * sddm
 * networkmanager
